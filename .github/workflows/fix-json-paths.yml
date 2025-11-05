@@ -1,0 +1,114 @@
+name: Normalize JSON paths for GitHub Pages
+
+# main ブランチへ push があったときに実行
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'site/**'            # site 配下に変更があったときだけ実行
+      - '.github/workflows/**'
+
+permissions:
+  contents: write  # Actions が repo にコミットできるようにする
+
+jobs:
+  fix-json:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Show repo info (debug)
+        run: |
+          echo "GITHUB_REPOSITORY=$GITHUB_REPOSITORY"
+          echo "GITHUB_REF=$GITHUB_REF"
+
+      - name: Run python script to normalize JSON paths
+        # Python を使って site 以下の .json を再生成/置換する（詳細は下のスクリプト）
+        run: |
+          python3 - <<'PY'
+          import os, json, pathlib, sys, re
+          from urllib.parse import urljoin
+
+          repo = os.environ.get("GITHUB_REPOSITORY", "")  # owner/repo
+          if not repo:
+              print("GITHUB_REPOSITORY not set")
+              sys.exit(1)
+          owner, repo_name = repo.split("/", 1)
+          # Pages の想定ベースURL: https://<owner>.github.io/<repo_name>/site/
+          base = f"https://{owner}.github.io/{repo_name}/"
+          print("Using base:", base)
+
+          site_root = pathlib.Path("site")
+          if not site_root.exists():
+              print("No site/ folder found. Exiting.")
+              sys.exit(0)
+
+          changed_files = []
+          # 再帰的に .json ファイルを探す
+          for json_path in site_root.rglob("*.json"):
+              text = json_path.read_text(encoding="utf-8")
+              try:
+                  data = json.loads(text)
+              except Exception as e:
+                  print(f"Skipping {json_path} (invalid json): {e}")
+                  continue
+
+              def fix_value(val, json_dir):
+                  # 文字列で相対パスっぽいものを絶対URLに変換
+                  if not isinstance(val, str):
+                      return val
+                  # 見つけるパターン: startswith ./ or ../ or just 'images/...'
+                  if re.match(r'^\.\.?\/', val) or re.match(r'^[^/:]+\/', val):
+                      # json_dir は json ファイルのあるディレクトリ相対 site_root
+                      # resolve path relative to site_root
+                      rel = (json_dir / val).resolve()
+                      try:
+                          # 相対パス（site 以下）を site_root 以下のパスに変換
+                          # まず site_root absolute
+                          site_abs = site_root.resolve()
+                          if str(rel).startswith(str(site_abs)):
+                              rel_from_site = pathlib.Path(str(rel)[len(str(site_abs)):].lstrip(os.sep)).as_posix()
+                              return urljoin(base, rel_from_site)
+                      except Exception:
+                          pass
+                  return val
+
+              def walk_and_fix(obj, json_dir):
+                  if isinstance(obj, dict):
+                      new = {}
+                      for k,v in obj.items():
+                          new[k] = walk_and_fix(v, json_dir)
+                      return new
+                  elif isinstance(obj, list):
+                      return [walk_and_fix(v, json_dir) for v in obj]
+                  else:
+                      return fix_value(obj, json_dir)
+
+              new_data = walk_and_fix(data, json_path.parent)
+              if new_data != data:
+                  json_path.write_text(json.dumps(new_data, ensure_ascii=False, indent=2), encoding="utf-8")
+                  changed_files.append(str(json_path))
+                  print("Updated:", json_path)
+
+          if changed_files:
+              print("Changed files:", changed_files)
+              sys.exit(0)
+          else:
+              print("No JSON changes needed.")
+          PY
+
+      - name: Commit & push changes (if any)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          # only commit if there are changes
+          if ! git diff --cached --quiet; then
+            git commit -m "ci: normalize JSON paths for GitHub Pages"
+            git push
+          else
+            echo "No changes to commit"
+          fi

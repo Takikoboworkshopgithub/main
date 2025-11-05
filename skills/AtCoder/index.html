@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AtCoder Records - Takiguchi Workshop</title>
+
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- GSAP (アニメーションライブラリ) CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+    <style>
+      /* 共通フォント設定 */
+      body {
+        font-family: 'Inter', 'Noto Sans JP', sans-serif;
+        background-color: #f8f8f8; /* AtCoder風の薄いグレー背景 */
+        color: #333;
+      }
+
+      /* 背景動画コンテナ */
+      #video-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        z-index: -1;
+        overflow: hidden;
+      }
+      #video-bg video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        /* ぼかしとトーンダウン */
+        filter: blur(8px) brightness(0.6);
+      }
+
+      /* メインコンテンツエリア */
+      /* 背景動画の上に重なる */
+      main {
+        position: relative;
+        z-index: 10;
+        background-color: rgba(255, 255, 255, 0.9); /* 半透明の白でコンテンツを読みやすく */
+        backdrop-filter: blur(2px); /* 背景のぼかしと少しだけ馴染ませる */
+      }
+
+      /* AtCoderアクセントカラー (Tailwind拡張) */
+      .text-ac-blue {
+        color: #337ab7;
+      }
+      .bg-ac-blue {
+        background-color: #337ab7;
+      }
+      .hover\:bg-ac-blue-dark:hover {
+        background-color: #286090;
+      }
+      .border-ac-blue {
+        border-color: #337ab7;
+      }
+
+      /* レートの色（仮） */
+      .text-ac-rating-blue {
+        color: #0000ff;
+        font-weight: bold;
+      }
+
+      /* コンテストカードの初期状態（GSAP用） */
+      .contest-card {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      /* モーダルの初期状態 */
+      #modal-backdrop {
+        display: none;
+        opacity: 0;
+      }
+      #modal-content {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+
+      /* フッター */
+      footer {
+        position: relative;
+        z-index: 10;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100">
+    <!-- 1. 背景動画 -->
+    <div id="video-bg">
+      <video autoplay loop muted playsinline poster="https://placehold.co/1920x1080/000000/333333?text=Loading...">
+        <!-- /skills/AtCoder/videos/background.mp4 を想定 -->
+        <source src="./videos/background.mp4" type="video/mp4" />
+      </video>
+    </div>
+
+    <!-- 2. メインコンテンツ -->
+    <main class="min-h-screen">
+      <div class="container mx-auto max-w-5xl px-6 py-16 md:py-24">
+        <!-- 2.1. ヘッダー -->
+        <header class="text-center mb-16">
+          <h1 class="text-5xl md:text-6xl font-bold tracking-tight text-gray-900">AtCoder</h1>
+          <p class="text-xl md:text-2xl mt-4 text-gray-600">競技プログラミングの記録</p>
+        </header>
+
+        <!-- 2.2. プロフィールセクション -->
+        <section
+          id="profile-section"
+          class="bg-white p-8 rounded-lg shadow-lg flex flex-col md:flex-row items-center gap-8 mb-16"
+        >
+          <img
+            src="./images/icon.png"
+            alt="AtCoder Icon"
+            class="w-32 h-32 rounded-full border-4 border-gray-200 shadow-md"
+            onerror="this.onerror=null; this.src='https://placehold.co/128x128/337AB7/FFFFFF?text=T';"
+          />
+          <div class="flex-1 text-center md:text-left">
+            <h2 class="text-3xl font-bold text-gray-900">Taki_Kobo (仮)</h2>
+            <p class="text-lg text-gray-600 mt-2">Highest Rating: <span class="text-ac-rating-blue">1450</span></p>
+            <p class="text-md text-gray-500 mt-1">Main Language: Python, C++</p>
+            <a
+              href="https://atcoder.jp/users/example"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-block bg-ac-blue text-white font-bold py-2 px-6 rounded-lg mt-4 transition-all duration-300 hover:bg-ac-blue-dark"
+            >
+              AtCoder Profile
+            </a>
+          </div>
+        </section>
+
+        <!-- 2.3. レートグラフセクション -->
+        <section id="rating-graph-section" class="bg-white p-6 md:p-8 rounded-lg shadow-lg mb-16">
+          <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Rating History</h3>
+          <div class="w-full h-64 md:h-96">
+            <canvas id="ratingChart"></canvas>
+          </div>
+        </section>
+
+        <!-- 2.4. コンテスト記録セクション -->
+        <section id="contest-records-section">
+          <h3 class="text-3xl font-bold text-gray-800 mb-8 text-center">Contest Records</h3>
+          <div id="contest-records-container" class="space-y-6">
+            <!-- JSによってコンテストカードが挿入されます -->
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- 3. フッター -->
+    <footer class="text-center text-gray-400 py-10 border-t border-gray-700 bg-gray-900">
+      <p>&copy; 2025 Takiguchi Workshop</p>
+      <p class="mt-2 text-sm">
+        このページの内容は Creative Commons 表示—継承（CC BY-SA）ライセンスの下で公開されています。
+      </p>
+    </footer>
+
+    <!-- 4. モーダル -->
+    <div
+      id="modal-backdrop"
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6"
+    >
+      <div id="modal-content" class="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6 md:p-8">
+          <!-- モーダルヘッダー -->
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h3 id="modal-title" class="text-2xl font-bold text-gray-900">
+                <!-- JS -->
+              </h3>
+              <p id="modal-date" class="text-sm text-gray-500">
+                <!-- JS -->
+              </p>
+            </div>
+            <button
+              id="modal-close-btn"
+              class="text-gray-400 hover:text-gray-700 transition-colors text-3xl"
+              title="閉じる"
+            >
+              &times;
+            </button>
+          </div>
+
+          <!-- モーダルボディ -->
+          <div class="border-t border-gray-200 pt-4">
+            <h4 class="text-lg font-semibold text-gray-800 mb-2">コンテストの感想</h4>
+            <p id="modal-comment" class="text-base text-gray-700 leading-relaxed mb-6">
+              <!-- JS -->
+            </p>
+            <a
+              id="modal-solution-link"
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-block bg-ac-blue text-white font-bold py-2 px-5 rounded-lg transition-all duration-300 hover:bg-ac-blue-dark"
+            >
+              提出コードを見る
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- メインスクリプト -->
+    <script>
+      // ===============================================
+      // モックデータ (JSON模擬)
+      // ===============================================
+
+      // レート推移データ
+      const ratingData = {
+        labels: ['2025-03', '2025-04', '2025-05', '2025-06'],
+        data: [1200, 1380, 1420, 1450]
+      };
+
+      // コンテスト記録データ
+      const contestData = [
+        {
+          title: 'AtCoder Beginner Contest 305',
+          date: '2025-06-09',
+          rank: 289,
+          performance: 1450,
+          language: 'C++',
+          comment: '初めてE問題に到達。構築問題へのアプローチを改善できました。グラフ理論の基礎が役立った回です。',
+          solution: 'https://atcoder.jp/contests/abc305/submissions/23456789'
+        },
+        {
+          title: 'AtCoder Beginner Contest 301',
+          date: '2025-04-13',
+          rank: 342,
+          performance: 1380,
+          language: 'Python',
+          comment:
+            'B問題で実装に詰まるもCで巻き返し。DP（動的計画法）の基本的な理解が深まったコンテストでした。考察ミスを減らしたい。',
+          solution: 'https://atcoder.jp/contests/abc301/submissions/12345678'
+        }
+      ];
+
+      // ===============================================
+      // DOMContentLoaded
+      // ===============================================
+      document.addEventListener('DOMContentLoaded', () => {
+        // --- DOM要素 ---
+        const recordsContainer = document.getElementById('contest-records-container');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const modalContent = document.getElementById('modal-content');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+
+        // --- 1. レートグラフの描画 (Chart.js) ---
+        function initRatingChart() {
+          const ctx = document.getElementById('ratingChart').getContext('2d');
+          if (!ctx) return;
+
+          // グラデーションの作成
+          const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+          gradient.addColorStop(0, 'rgba(51, 122, 183, 0.4)');
+          gradient.addColorStop(1, 'rgba(51, 122, 183, 0)');
+
+          new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: ratingData.labels,
+              datasets: [
+                {
+                  label: 'Rating',
+                  data: ratingData.data,
+                  borderColor: '#337ab7', // 線の色
+                  backgroundColor: gradient, // 塗りつぶし
+                  borderWidth: 3,
+                  pointBackgroundColor: '#337ab7',
+                  pointRadius: 5,
+                  pointHoverRadius: 7,
+                  fill: true,
+                  tension: 0.1 // 少し滑らかに
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              animation: {
+                duration: 1500, // アニメーション時間
+                easing: 'easeInOutQuart'
+              },
+              plugins: {
+                legend: {
+                  display: false // 凡例は非表示
+                },
+                tooltip: {
+                  enabled: true,
+                  mode: 'index',
+                  intersect: false
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: false,
+                  grid: {
+                    color: '#e0e0e0' // グリッド線
+                  },
+                  ticks: {
+                    color: '#555' // 目盛り
+                  }
+                },
+                x: {
+                  grid: {
+                    display: false // X軸のグリッドは非表示
+                  },
+                  ticks: {
+                    color: '#555'
+                  }
+                }
+              }
+            }
+          });
+        }
+
+        // --- 2. コンテスト記録の描画 ---
+        function renderContestRecords() {
+          recordsContainer.innerHTML = ''; // クリア
+          contestData.forEach((contest, index) => {
+            const cardHtml = `
+              <div class="contest-card bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                <div class="p-6">
+                  <div class="flex flex-col md:flex-row justify-between md:items-center mb-3">
+                    <h4 class="text-xl font-bold text-ac-blue">${contest.title}</h4>
+                    <span class="text-sm text-gray-500 mt-1 md:mt-0">${contest.date}</span>
+                  </div>
+                  <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-700 mb-4">
+                    <span>Rank: <strong class="text-gray-900">${contest.rank}</strong></span>
+                    <span>Perf: <strong class="text-gray-900">${contest.performance}</strong></span>
+                    <span>Lang: <strong class="text-gray-900">${contest.language}</strong></span>
+                  </div>
+                  <p class="text-gray-600 leading-relaxed mb-5">${contest.comment.substring(0, 80)}...</p>
+                  <button
+                    data-index="${index}"
+                    class="details-btn text-ac-blue font-semibold transition-colors duration-300 hover:text-ac-blue-dark"
+                  >
+                    詳細を見る &rarr;
+                  </button>
+                </div>
+              </div>
+            `;
+            recordsContainer.innerHTML += cardHtml;
+          });
+
+          // GSAPでカードをフェードイン
+          gsap.to('.contest-card', {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            stagger: 0.15,
+            ease: 'power3.out',
+            delay: 0.5 // グラフのアニメーションと被らないように
+          });
+        }
+
+        // --- 3. モーダルを開く ---
+        function openModal(index) {
+          const contest = contestData[index];
+
+          // データをモーダルに設定
+          document.getElementById('modal-title').textContent = contest.title;
+          document.getElementById('modal-date').textContent = contest.date;
+          document.getElementById('modal-comment').textContent = contest.comment;
+          document.getElementById('modal-solution-link').href = contest.solution;
+
+          // GSAPでモーダルをフェードイン
+          modalBackdrop.style.display = 'flex';
+          gsap.to(modalBackdrop, { opacity: 1, duration: 0.3, ease: 'power2.out' });
+          gsap.to(modalContent, {
+            opacity: 1,
+            scale: 1,
+            duration: 0.4,
+            delay: 0.1,
+            ease: 'back.out(1.4)'
+          });
+
+          document.body.style.overflow = 'hidden'; // 背景スクロール禁止
+        }
+
+        // --- 4. モーダルを閉じる ---
+        function closeModal() {
+          gsap.to(modalContent, {
+            opacity: 0,
+            scale: 0.95,
+            duration: 0.3,
+            ease: 'power2.in'
+          });
+          gsap.to(modalBackdrop, {
+            opacity: 0,
+            duration: 0.4,
+            ease: 'power2.out',
+            onComplete: () => {
+              modalBackdrop.style.display = 'none';
+              document.body.style.overflow = 'auto'; // スクロール許可
+            }
+          });
+        }
+
+        // --- 5. イベントリスナー ---
+        // コンテストカードのクリック（イベント委任）
+        recordsContainer.addEventListener('click', (e) => {
+          const button = e.target.closest('.details-btn');
+          if (button) {
+            const index = button.dataset.index;
+            openModal(index);
+          }
+        });
+
+        // 閉じるボタン
+        modalCloseBtn.addEventListener('click', closeModal);
+
+        // 背景クリック
+        modalBackdrop.addEventListener('click', (e) => {
+          if (e.target === modalBackdrop) {
+            closeModal();
+          }
+        });
+
+        // Escキー
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && modalBackdrop.style.display === 'flex') {
+            closeModal();
+          }
+        });
+
+        // --- 初期化実行 ---
+        initRatingChart();
+        renderContestRecords();
+      });
+    </script>
+  </body>
+</html>

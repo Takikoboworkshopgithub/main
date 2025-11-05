@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Composing - Rei Portfolio</title>
+
+    <!-- TailwindCSS & WaveSurfer -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
+
+    <style>
+      body {
+        font-family: 'Inter', 'Noto Sans JP', sans-serif;
+        background-color: #050505;
+        color: #f0f0f0;
+        transition: background-color 0.8s ease;
+      }
+
+      #hero-section {
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+      }
+      #hero-video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -2;
+      }
+      #hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        z-index: -1;
+      }
+
+      #main-content {
+        background-color: var(--bg-color, #050505);
+        min-height: 100vh;
+        transition: background-color 0.8s ease;
+        position: relative;
+        z-index: 10;
+      }
+
+      /* 波形 */
+      #waveform-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 180px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+        z-index: 999;
+        pointer-events: none;
+      }
+
+      #waveform {
+        width: 90%;
+        display: none;
+      }
+
+      #waveform-flatline {
+        width: 0%;
+        height: 2px;
+        background-color: var(--wave-color, #38ef7d);
+        box-shadow: 0 0 8px var(--wave-color, #38ef7d);
+        animation: extendLine 3s forwards ease-out;
+      }
+
+      @keyframes extendLine {
+        from {
+          width: 0%;
+          opacity: 0.6;
+        }
+        to {
+          width: 80%;
+          opacity: 1;
+        }
+      }
+
+      .album-jacket {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 2px solid transparent;
+        cursor: pointer;
+      }
+      .album-jacket:hover {
+        transform: scale(1.05);
+      }
+      .album-jacket.is-active {
+        border-color: var(--wave-color, #38ef7d);
+        box-shadow: 0 0 20px var(--wave-color, #38ef7d);
+      }
+
+      #tracklist-container {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.6s ease-out;
+      }
+      #tracklist-container.is-open {
+        max-height: 1000px;
+      }
+
+      /* コントロールボタン */
+      #player-controls {
+        display: flex;
+        justify-content: center;
+        gap: 1.2rem;
+        margin-top: 10px;
+        pointer-events: all;
+      }
+
+      #player-controls button {
+        background: transparent;
+        border: none;
+        color: var(--wave-color, #38ef7d);
+        font-size: 1.8rem;
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+
+      #player-controls button:hover {
+        transform: scale(1.2);
+      }
+    </style>
+  </head>
+
+  <body>
+    <section id="hero-section">
+      <video id="hero-video" autoplay loop muted playsinline>
+        <source src="./videos/intro.mp4" type="video/mp4" />
+      </video>
+      <div id="hero-overlay"></div>
+      <div id="hero-text" class="text-center z-10">
+        <h1 class="text-6xl md:text-8xl font-bold tracking-tighter">Composing</h1>
+      </div>
+    </section>
+
+    <main id="main-content" class="pt-20 md:pt-32 pb-60">
+      <div class="container mx-auto px-6 max-w-6xl">
+        <section id="album-gallery" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-10"></section>
+        <section id="tracklist-container" class="mt-16">
+          <div id="tracklist-content" class="max-w-4xl mx-auto bg-black/30 p-6 rounded-lg"></div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="text-center text-gray-400 py-10 border-t border-gray-700 bg-black relative z-10">
+      <p>&copy; 2025 Takiguchi Workshop</p>
+    </footer>
+
+    <!-- 波形 -->
+    <div id="waveform-container">
+      <div id="waveform"></div>
+      <div id="waveform-flatline"></div>
+
+      <div id="player-controls">
+        <button id="prevBtn">⏮</button>
+        <button id="playBtn">▶️</button>
+        <button id="pauseBtn">⏸</button>
+        <button id="stopBtn">⏹</button>
+        <button id="nextBtn">⏭</button>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const waveformEl = document.getElementById('waveform');
+        const flatlineEl = document.getElementById('waveform-flatline');
+        const galleryEl = document.getElementById('album-gallery');
+        const tracklistContainerEl = document.getElementById('tracklist-container');
+        const tracklistContentEl = document.getElementById('tracklist-content');
+        const mainContent = document.getElementById('main-content');
+
+        const playBtn = document.getElementById('playBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+
+        let wavesurfer = null;
+        let albums = [];
+        let currentAlbum = null;
+        let currentTrackIndex = -1;
+        let currentBtn = null;
+
+        fetch('./albums.json')
+          .then((res) => res.json())
+          .then((data) => {
+            albums = data;
+            initWaveSurfer();
+            renderAlbumGallery();
+            showFlatline(true);
+            updateColors({ background: '#050505', wave: '#38ef7d' });
+          });
+
+        function initWaveSurfer() {
+          wavesurfer = WaveSurfer.create({
+            container: waveformEl,
+            waveColor: '#38ef7d',
+            progressColor: '#f0f0f0',
+            height: 150,
+            cursorColor: '#ffffff',
+            barWidth: 3,
+            barRadius: 3,
+            responsive: true
+          });
+          wavesurfer.on('finish', () => nextTrack());
+        }
+
+        function renderAlbumGallery() {
+          galleryEl.innerHTML = '';
+          albums.forEach((album) => {
+            const img = document.createElement('img');
+            img.src = album.jacket;
+            img.alt = album.title;
+            img.className = 'album-jacket w-full aspect-square object-cover rounded-lg shadow-lg';
+            img.addEventListener('click', () => handleAlbumClick(album, img));
+            galleryEl.appendChild(img);
+          });
+        }
+
+        function handleAlbumClick(album, img) {
+          document.querySelectorAll('.album-jacket').forEach((el) => el.classList.remove('is-active'));
+          img.classList.add('is-active');
+          currentAlbum = album;
+          updateColors(album.color);
+          renderTracklist(album.tracks);
+          tracklistContainerEl.classList.add('is-open');
+        }
+
+        function renderTracklist(tracks) {
+          tracklistContentEl.innerHTML = '';
+          tracks.forEach((t, i) => {
+            const div = document.createElement('div');
+            div.className =
+              'track-item flex items-center justify-between p-4 border-b border-gray-700 hover:bg-gray-800/50';
+            div.innerHTML = `
+              <div class="flex items-center gap-4">
+                <button data-index="${i}" class="play-btn text-2xl" style="color: var(--wave-color,#38ef7d);">▶</button>
+                <div><h4 class="text-lg font-semibold">${t.title}</h4></div>
+              </div>`;
+            tracklistContentEl.appendChild(div);
+          });
+          tracklistContentEl
+            .querySelectorAll('.play-btn')
+            .forEach((btn) => btn.addEventListener('click', () => playTrack(parseInt(btn.dataset.index), btn)));
+        }
+
+        function playTrack(index, btn) {
+          if (!currentAlbum) return;
+          const track = currentAlbum.tracks[index];
+          const isSame = index === currentTrackIndex;
+
+          if (isSame && wavesurfer.isPlaying()) {
+            wavesurfer.pause();
+            btn.textContent = '▶';
+            return;
+          }
+
+          if (currentBtn && currentBtn !== btn) currentBtn.textContent = '▶';
+          currentBtn = btn;
+          currentTrackIndex = index;
+          showFlatline(false);
+          wavesurfer.load(track.file);
+          wavesurfer.once('ready', () => {
+            wavesurfer.play();
+            btn.textContent = '⏸';
+          });
+        }
+
+        // --- 再生制御 ---
+        playBtn.addEventListener('click', () => {
+          if (!wavesurfer.isPlaying()) wavesurfer.play();
+        });
+        pauseBtn.addEventListener('click', () => wavesurfer.pause());
+        stopBtn.addEventListener('click', () => {
+          wavesurfer.stop();
+          showFlatline(true);
+          if (currentBtn) currentBtn.textContent = '▶';
+        });
+        nextBtn.addEventListener('click', nextTrack);
+        prevBtn.addEventListener('click', prevTrack);
+
+        function nextTrack() {
+          if (!currentAlbum) return;
+          currentTrackIndex = (currentTrackIndex + 1) % currentAlbum.tracks.length;
+          playTrack(currentTrackIndex, getBtnByIndex(currentTrackIndex));
+        }
+
+        function prevTrack() {
+          if (!currentAlbum) return;
+          currentTrackIndex = (currentTrackIndex - 1 + currentAlbum.tracks.length) % currentAlbum.tracks.length;
+          playTrack(currentTrackIndex, getBtnByIndex(currentTrackIndex));
+        }
+
+        function getBtnByIndex(i) {
+          return tracklistContentEl.querySelector(`.play-btn[data-index="${i}"]`);
+        }
+
+        function updateColors(color) {
+          mainContent.style.setProperty('--bg-color', color.background);
+          document.documentElement.style.setProperty('--wave-color', color.wave);
+          if (wavesurfer) wavesurfer.setOptions({ waveColor: color.wave });
+        }
+
+        function showFlatline(show) {
+          waveformEl.style.display = show ? 'none' : 'block';
+          flatlineEl.style.display = show ? 'block' : 'none';
+        }
+      });
+    </script>
+  </body>
+</html>

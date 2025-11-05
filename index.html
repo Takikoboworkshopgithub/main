@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Takiguchi Workshop Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* カスタムスタイル */
+      body {
+        font-family: 'Inter', 'Noto Sans JP', sans-serif;
+        background-color: #1a1a1a; /* ベース背景をダークに */
+        color: #f0f0f0; /* 基本の文字色を明るく */
+        scroll-behavior: smooth;
+      }
+
+      /* --- NEW: Adobe-like Color Palette --- */
+      :root {
+        --color-primary-dark: #1a1a1a;
+        --color-secondary-dark: #2c2c2c;
+        --color-text-light: #f0f0f0;
+        --color-text-medium: #a0a0a0;
+        --color-accent-purple: #9d34da;
+        --color-accent-orange: #f76e29;
+        --color-accent-teal: #26bfa0;
+        --color-accent-blue: #3688fc;
+      }
+      .text-accent-orange {
+        color: var(--color-accent-orange);
+      }
+      .bg-accent-orange {
+        background-color: var(--color-accent-orange);
+      }
+      .border-accent-orange {
+        border-color: var(--color-accent-orange);
+      }
+      .text-accent-purple {
+        color: var(--color-accent-purple);
+      }
+      .bg-accent-purple {
+        background-color: var(--color-accent-purple);
+      }
+      .border-accent-purple {
+        border-color: var(--color-accent-purple);
+      }
+      .text-accent-teal {
+        color: var(--color-accent-teal);
+      }
+      .bg-accent-teal {
+        background-color: var(--color-accent-teal);
+      }
+      .text-accent-blue {
+        color: var(--color-accent-blue);
+      }
+      .bg-accent-blue {
+        background-color: var(--color-accent-blue);
+      }
+
+      /* ヒーローセクション */
+      #hero-video-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: -1;
+      }
+      #hero-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      #hero-video-container::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.4);
+        transition: background-color 1s ease-in-out;
+      }
+      #hero-video-container.is-darkened::after {
+        background-color: rgba(0, 0, 0, 1);
+      }
+
+      /* スクロールダウンアニメーション */
+      .scroll-down {
+        animation: bounce 2s infinite;
+      }
+      @keyframes bounce {
+        0%,
+        20%,
+        50%,
+        80%,
+        100% {
+          transform: translateY(0);
+        }
+        40% {
+          transform: translateY(-15px);
+        }
+        60% {
+          transform: translateY(-7px);
+        }
+      }
+
+      /* フェードインアニメーション */
+      .fade-in {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        transition-delay: var(--fade-delay, 0s);
+      }
+      .fade-in.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* ヘッダー & ナビゲーション */
+      .header-scrolled {
+        background-color: rgba(26, 26, 26, 0.85) !important;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+      .header-dark-mode a,
+      .header-dark-mode button,
+      #header #logo {
+        color: white;
+      }
+      .header-scrolled a,
+      .header-scrolled button,
+      .header-scrolled #logo {
+        color: var(--color-text-light) !important;
+      }
+
+      .nav-link.active {
+        color: var(--color-accent-orange) !important;
+        font-weight: bold;
+      }
+      .header-scrolled .nav-link:hover {
+        color: var(--color-accent-orange) !important;
+      }
+
+      /* --- NEW: Sitemap Styles --- */
+      #sitemap-menu {
+        transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+      }
+
+      /* Skills Section */
+      .skills-container {
+        scroll-snap-type: y mandatory;
+        overflow-y: scroll;
+        height: 100vh;
+      }
+      .skill-panel {
+        scroll-snap-align: start;
+        position: relative;
+        height: 100vh;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+      }
+      .skill-video-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -2;
+      }
+      .skill-video-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        z-index: -1;
+      }
+
+      /* --- NEW: Blog Post Styles --- */
+      .blog-post-link {
+        display: block;
+        padding: 2.5rem;
+        border-radius: 0.75rem;
+        background-color: var(--color-secondary-dark);
+        transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+        border: 1px solid transparent;
+      }
+      .blog-post-link:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        border-color: var(--color-accent-purple);
+      }
+      .blog-divider {
+        height: 1px;
+        background: linear-gradient(to right, transparent, var(--color-accent-purple), transparent);
+        border: 0;
+        margin: 2rem 0;
+      }
+    </style>
+  </head>
+  <body>
+    <header id="header" class="header-dark-mode fixed top-0 left-0 w-full z-50 transition-all duration-300">
+      <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-4">
+          <button id="sitemap-toggle" class="text-2xl" title="Sitemap">
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
+            </svg>
+          </button>
+          <a href="#home" id="logo" class="text-xl font-bold tracking-wider transition-colors">Takiguchi Workshop</a>
+        </div>
+
+        <nav id="desktop-nav" class="hidden md:flex space-x-8 text-lg">
+          <a href="#profile" data-section="profile" class="nav-link hover:text-accent-orange transition-colors"
+            >Profile</a
+          >
+          <a href="#skills" data-section="skills" class="nav-link hover:text-accent-orange transition-colors">Skills</a>
+          <a href="#blog" data-section="blog" class="nav-link hover:text-accent-orange transition-colors">Blog</a>
+        </nav>
+
+        <button id="mobile-menu-toggle" class="md:hidden text-2xl">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+          </svg>
+        </button>
+      </div>
+
+      <div
+        id="sitemap-menu"
+        class="hidden absolute top-full left-0 w-full bg-black/80 backdrop-blur-lg text-white p-6 opacity-0 transform -translate-y-4"
+      >
+        <div class="container mx-auto">
+          <span class="text-gray-400 text-sm">Home</span>
+          <ul class="mt-2 space-y-2">
+            <li>
+              <a href="#profile" class="sitemap-link text-lg hover:text-accent-orange transition-colors duration-200"
+                >/ Profile</a
+              >
+            </li>
+            <li>
+              <a href="#skills" class="sitemap-link text-lg hover:text-accent-orange transition-colors duration-200"
+                >/ Skills</a
+              >
+              <ul class="pl-6 mt-2 space-y-1 text-gray-300">
+                <li>
+                  <a
+                    href="./skills/Blender/index.html"
+                    class="sitemap-link hover:text-accent-orange transition-colors duration-200"
+                    >/ Blender</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="./skills/AviUtl/index.html"
+                    class="sitemap-link hover:text-accent-orange transition-colors duration-200"
+                    >/ AviUtl</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="./skills/AtCoder/index.html"
+                    class="sitemap-link hover:text-accent-orange transition-colors duration-200"
+                    >/ AtCoder</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="./skills/html/index.html"
+                    class="sitemap-link hover:text-accent-orange transition-colors duration-200"
+                    >/ HTML, CSS, JS</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="#./skills/composing"
+                    class="sitemap-link hover:text-accent-orange transition-colors duration-200"
+                    >/ Composing</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="./skills/Unity/index.html"
+                    class="sitemap-link hover:text-accent-orange transition-colors duration-200"
+                    >/ Unity</a
+                  >
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a href="#blog" class="sitemap-link text-lg hover:text-accent-orange transition-colors duration-200"
+                >/ Blog</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div id="mobile-menu" class="hidden md:hidden bg-gray-900/95 backdrop-blur-sm text-gray-200">
+        <a href="#profile" class="mobile-nav-link block text-center py-3 text-lg hover:bg-gray-800">Profile</a>
+        <a href="#skills" class="mobile-nav-link block text-center py-3 text-lg hover:bg-gray-800">Skills</a>
+        <a href="#blog" class="mobile-nav-link block text-center py-3 text-lg hover:bg-gray-800">Blog</a>
+      </div>
+    </header>
+
+    <main>
+      <section id="home" class="h-screen flex flex-col justify-center items-center text-center relative text-white">
+        <div id="hero-video-container">
+          <video
+            id="hero-video"
+            autoplay
+            muted
+            playsinline
+            poster="https://placehold.co/1920x1080/000000/ffffff?text=Loading..."
+          >
+            <source src="./videos/hero_background.mp4" type="video/mp4" />
+          </video>
+        </div>
+
+        <div class="z-10 p-8">
+          <h1
+            class="text-5xl md:text-7xl font-bold tracking-tighter leading-tight fade-in is-visible"
+            style="--fade-delay: 0.5s"
+          >
+            瀧口工房
+          </h1>
+          <p
+            class="text-xl md:text-2xl mt-2 tracking-wider text-gray-300 fade-in is-visible"
+            style="--fade-delay: 0.8s"
+          >
+            Takiguchi Workshop
+          </p>
+        </div>
+
+        <a href="#about-site" class="scroll-down absolute bottom-10 left-1/2 -translate-x-1/2 z-10">
+          <div class="flex flex-col items-center text-white">
+            <span>scroll</span>
+            <svg
+              class="w-6 h-6 mt-1"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </div>
+        </a>
+      </section>
+
+      <section id="about-site" class="py-20 md:py-32 bg-primary-dark">
+        <div class="container mx-auto px-6 max-w-4xl">
+          <h2 class="text-4xl font-bold text-center mb-10 fade-in text-accent-teal">
+            このサイトについて / About This Site
+          </h2>
+          <p class="mt-4 text-lg text-center text-gray-300 leading-relaxed fade-in" style="--fade-delay: 0.1s">
+            瀧口工房のサイトへようこそ。<br />
+            このサイトでは、私が作った作品や制作物の数々、ブログなどを発信していきます。
+          </p>
+        </div>
+      </section>
+
+      <section id="profile" class="py-20 md:py-32 bg-secondary-dark">
+        <div class="container mx-auto px-6 max-w-4xl">
+          <h2 class="text-4xl font-bold text-center mb-16 fade-in text-accent-orange">自己紹介 / Profile</h2>
+
+          <div class="flex flex-col md:flex-row items-center gap-12 fade-in" style="--fade-delay: 0.1s">
+            <img
+              src="./images/profile.jpg"
+              alt="瀧口のプロフィール画像"
+              onerror="this.onerror=null; this.src='https://placehold.co/240x240/D1D5DB/4B5563?text=Profile+Image';"
+              class="w-48 h-48 md:w-60 md:h-60 rounded-full object-cover shadow-lg border-4 border-accent-purple"
+            />
+            <div class="text-center md:text-left">
+              <h3 class="text-3xl font-bold">瀧口 (Takiguchi)</h3>
+              <p class="text-lg text-gray-400 mt-2">デベロッパー・コンポーザー</p>
+              <p class="mt-4 leading-relaxed">
+                桐朋高校を卒業後、明治大学理工学部情報科学科に在学中。現在学部2年生<br />
+                Blenderでの映像制作やプログラミング、音楽制作を独学で行っている。<br />
+              </p>
+              <div class="mt-6 flex justify-center md:justify-start space-x-5">
+                <a
+                  href="https://youtube.com/@taki_kobo"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-gray-400 hover:text-accent-orange transition-transform duration-200 transform hover:scale-110"
+                  title="YouTube"
+                  ><svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      fill-rule="evenodd"
+                      d="M19.802 7.026a2.44 2.44 0 00-1.724-1.725C16.538 4.8 12 4.8 12 4.8s-4.538 0-6.078.501a2.44 2.44 0 00-1.724 1.725C3.7 8.564 3.7 12 3.7 12s0 3.436.5 4.974a2.44 2.44 0 001.724 1.725C7.462 19.2 12 19.2 12 19.2s4.538 0 6.078-.501a2.44 2.44 0 001.724-1.725c.5-1.538.5-4.974.5-4.974s0-3.436-.5-4.974zM9.9 14.475V9.525l4.33 2.475-4.33 2.475z"
+                      clip-rule="evenodd"
+                    /></svg
+                ></a>
+                <a
+                  href="https://www.instagram.com/tqklg_?igsh=emh1N3R4OTRvM3ht"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-gray-400 hover:text-accent-orange transition-transform duration-200 transform hover:scale-110"
+                  title="Instagram"
+                  ><svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      fill-rule="evenodd"
+                      d="M12.315 2c2.43 0 2.714.01 3.665.053 1.144.052 1.83.248 2.418.45a3.81 3.81 0 011.417.918 3.81 3.81 0 01.918 1.417c.202.588.398 1.274.45 2.418.044.95.053 1.234.053 3.665s-.01 2.714-.053 3.665a4.522 4.522 0 01-.45 2.418 3.81 3.81 0 01-.918 1.417 3.81 3.81 0 01-1.417.918c-.588.202-1.274.398-2.418.45-.95.044-1.235.053-3.665.053s-2.714-.01-3.665-.053a4.522 4.522 0 01-2.418-.45 3.81 3.81 0 01-1.417-.918 3.81 3.81 0 01-.918-1.417c-.202-.588-.398-1.274-.45-2.418C2.01 14.714 2 14.43 2 12s.01-2.714.053-3.665a4.522 4.522 0 01.45-2.418 3.81 3.81 0 01.918-1.417A3.81 3.81 0 014.839 3.5c.588-.202 1.274-.398 2.418-.45C8.207 2.01 8.49 2 9.685 2h2.63zM12 6.837a5.163 5.163 0 100 10.326 5.163 5.163 0 000-10.326zM12 15.25a3.25 3.25 0 110-6.5 3.25 3.25 0 010 6.5zM16.95 6.3a1.25 1.25 0 100 2.5 1.25 1.25 0 000-2.5z"
+                      clip-rule="evenodd"
+                    /></svg
+                ></a>
+                <a
+                  href="https://note.com/demo___"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-gray-400 hover:text-accent-orange transition-transform duration-200 transform hover:scale-110"
+                  title="Note"
+                  ><svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M18.527 5.053c.422-.053 1.014.053 1.227.427.213.373.053.906-.107 1.28l-5.333 11.253c-.213.48-.693.8-1.227.854-.427.053-1.013-.053-1.227-.427-.213-.373-.053-.907.107-1.28L17.28 6.66c.213-.48.693-.8 1.227-.854L18.527 5.053zm-6.08 1.44a.8.8 0 01.8.8v9.413a.8.8 0 01-1.6 0V7.293a.8.8 0 01.8-.8zM5.473 11.887c.053-.427.427-.747.854-.8.426-.053.8.16 1.013.533l2.293 4.8c.214.427.16.96-.106 1.334-.267.373-.747.586-1.227.533-.053.053-.053.053 0 0-.427-.053-.8-.32-1.013-.693l-2.294-4.8c-.213-.427-.16-.96.107-1.334.266-.373.746-.586 1.226-.533h.107z"
+                    /></svg
+                ></a>
+                <a
+                  href="https://github.com/Takikoboworkshopgithub"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-gray-400 hover:text-accent-orange transition-transform duration-200 transform hover:scale-110"
+                  title="GitHub"
+                  ><svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      fill-rule="evenodd"
+                      d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.168 6.839 9.492.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.82c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.378.203 2.398.1 2.651.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.942.359.308.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z"
+                      clip-rule="evenodd"
+                    /></svg
+                ></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div id="skills-gate"></div>
+
+      <section id="skills" class="skills-container bg-primary-dark">
+        <div id="skill-blender" class="skill-panel">
+          <video
+            class="skill-video-bg"
+            autoplay
+            loop
+            muted
+            playsinline
+            poster="https://placehold.co/1920x1080/1a1a1a/ffffff?text=Blender"
+          >
+            <source src="./videos/blender.mp4" type="video/mp4" />
+          </video>
+          <div class="skill-video-overlay"></div>
+          <div class="z-10 text-white text-center p-8 max-w-2xl">
+            <h3 class="text-5xl md:text-6xl font-bold tracking-tighter text-accent-orange">Blender</h3>
+            <p class="mt-4 text-lg md:text-xl leading-relaxed">3Dの作品。CGやVFXなどを制作しています。</p>
+            <a
+              href="./skills/Blender/index.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="mt-8 inline-block bg-accent-orange text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition-all duration-300"
+              >関連作品を見る</a
+            >
+          </div>
+        </div>
+        <div id="skill-aviutl" class="skill-panel">
+          <video
+            class="skill-video-bg"
+            autoplay
+            loop
+            muted
+            playsinline
+            poster="https://placehold.co/1920x1080/1a1a1a/ffffff?text=AviUtl"
+          >
+            <source src="./videos/aviutl.mp4" type="video/mp4" />
+          </video>
+          <div class="skill-video-overlay"></div>
+          <div class="z-10 text-white text-center p-8 max-w-2xl">
+            <h3 class="text-5xl md:text-6xl font-bold tracking-tighter text-accent-blue">AviUtl</h3>
+            <p class="mt-4 text-lg md:text-xl leading-relaxed">
+              動画編集に限らず、文字PVやモーショングラフィックスを制作。<br />Blenderとの共作もここに掲載します。
+            </p>
+            <a
+              href="./skills/AtCoder/index.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="mt-8 inline-block bg-accent-blue text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition-all duration-300"
+              >関連作品を見る</a
+            >
+          </div>
+        </div>
+        <div id="skill-atcoder" class="skill-panel">
+          <video
+            class="skill-video-bg"
+            autoplay
+            loop
+            muted
+            playsinline
+            poster="https://placehold.co/1920x1080/1a1a1a/ffffff?text=AtCoder"
+          >
+            <source src="./videos/Atcoder.mp4" type="video/mp4" />
+          </video>
+          <div class="skill-video-overlay"></div>
+          <div class="z-10 text-white text-center p-8 max-w-2xl">
+            <h3 class="text-5xl md:text-6xl font-bold tracking-tighter" style="color: #c9c9c9">AtCoder</h3>
+            <p class="mt-4 text-lg md:text-xl leading-relaxed">
+              Atcoderに参加しています。<br />2025年のICPCでは学内で準優勝しました。
+            </p>
+            <a
+              href="./skills/AtCoder/index.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="mt-8 inline-block bg-gray-600 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition-all duration-300"
+              >プロフィールを見る</a
+            >
+          </div>
+        </div>
+        <div id="skill-web" class="skill-panel">
+          <video
+            class="skill-video-bg"
+            autoplay
+            loop
+            muted
+            playsinline
+            poster="https://placehold.co/1920x1080/1a1a1a/ffffff?text=Web"
+          >
+            <source src="./videos/HTML.mp4" type="video/mp4" />
+          </video>
+          <div class="skill-video-overlay"></div>
+          <div class="z-10 text-white text-center p-8 max-w-2xl">
+            <h3 class="text-5xl md:text-6xl font-bold tracking-tighter text-accent-teal">HTML / CSS / JS</h3>
+            <p class="mt-4 text-lg md:text-xl leading-relaxed">
+              webサイトはまだまだ勉強中です。<br />このサイトはいくつかのwebサイトの影響を受けていて、<br />Geminiも活用しています。
+            </p>
+            <a
+              href="./skills/html/index.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="mt-8 inline-block bg-accent-teal text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition-all duration-300"
+              >関連作品を見る</a
+            >
+          </div>
+        </div>
+        <div id="skill-compose" class="skill-panel">
+          <video
+            class="skill-video-bg"
+            autoplay
+            loop
+            muted
+            playsinline
+            poster="https://placehold.co/1920x1080/1a1a1a/ffffff?text=Compose"
+          >
+            <source src="./videos/Composing.mp4" type="video/mp4" />
+          </video>
+          <div class="skill-video-overlay"></div>
+          <div class="z-10 text-white text-center p-8 max-w-2xl">
+            <h3 class="text-5xl md:text-6xl font-bold tracking-tighter text-accent-purple">Composing</h3>
+            <p class="mt-4 text-lg md:text-xl leading-relaxed">
+              ゲーム音楽を始めとしたインスト音楽を制作しています。<br />使用ソフトはMuseScoreとAbletonLiveです。
+            </p>
+            <a
+              href="./skills/composing/index.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="mt-8 inline-block bg-accent-purple text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition-all duration-300"
+              >関連作品を見る</a
+            >
+          </div>
+        </div>
+        <div id="skill-unity" class="skill-panel">
+          <video
+            class="skill-video-bg"
+            autoplay
+            loop
+            muted
+            playsinline
+            poster="https://placehold.co/1920x1080/1a1a1a/ffffff?text=Unity"
+          >
+            <source src="./videos/Unity.mp4" type="video/mp4" />
+          </video>
+          <div class="skill-video-overlay"></div>
+          <div class="z-10 text-white text-center p-8 max-w-2xl">
+            <h3 class="text-5xl md:text-6xl font-bold tracking-tighter">Unity</h3>
+            <p class="mt-4 text-lg md:text-xl leading-relaxed">いつか取り掛かります。このページは工事中です。<br /></p>
+            <a
+              href="./skills/Unity/index.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="mt-8 inline-block bg-gray-500 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition-all duration-300"
+              >関連作品を見る</a
+            >
+          </div>
+        </div>
+      </section>
+
+      <section id="blog" class="py-20 md:py-32 bg-primary-dark">
+        <div class="container mx-auto px-6 max-w-4xl">
+          <h2 class="text-4xl font-bold text-center mb-16 fade-in">ブログ / Blog</h2>
+          <div id="blog-posts-container" class="space-y-8"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="bg-black text-white py-10">
+      <div class="container mx-auto px-6 text-center">
+        <div class="mb-6 flex justify-center space-x-6">
+          <a
+            href="https://youtube.com/@taki_kobo"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-gray-400 hover:text-white transition-colors"
+            title="YouTube"
+            ><svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                fill-rule="evenodd"
+                d="M19.802 7.026a2.44 2.44 0 00-1.724-1.725C16.538 4.8 12 4.8 12 4.8s-4.538 0-6.078.501a2.44 2.44 0 00-1.724 1.725C3.7 8.564 3.7 12 3.7 12s0 3.436.5 4.974a2.44 2.44 0 001.724 1.725C7.462 19.2 12 19.2 12 19.2s4.538 0 6.078-.501a2.44 2.44 0 001.724-1.725c.5-1.538.5-4.974.5-4.974s0-3.436-.5-4.974zM9.9 14.475V9.525l4.33 2.475-4.33 2.475z"
+                clip-rule="evenodd"
+              /></svg
+          ></a>
+          <a
+            href="https://www.instagram.com/tqklg_?igsh=emh1N3R4OTRvM3ht"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-gray-400 hover:text-white transition-colors"
+            title="Instagram"
+            ><svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                fill-rule="evenodd"
+                d="M12.315 2c2.43 0 2.714.01 3.665.053 1.144.052 1.83.248 2.418.45a3.81 3.81 0 011.417.918 3.81 3.81 0 01.918 1.417c.202.588.398 1.274.45 2.418.044.95.053 1.234.053 3.665s-.01 2.714-.053 3.665a4.522 4.522 0 01-.45 2.418 3.81 3.81 0 01-.918 1.417 3.81 3.81 0 01-1.417.918c-.588.202-1.274.398-2.418.45-.95.044-1.235.053-3.665.053s-2.714-.01-3.665-.053a4.522 4.522 0 01-2.418-.45 3.81 3.81 0 01-1.417-.918 3.81 3.81 0 01-.918-1.417c-.202-.588-.398-1.274-.45-2.418C2.01 14.714 2 14.43 2 12s.01-2.714.053-3.665a4.522 4.522 0 01.45-2.418 3.81 3.81 0 01.918-1.417A3.81 3.81 0 014.839 3.5c.588-.202 1.274-.398 2.418-.45C8.207 2.01 8.49 2 9.685 2h2.63zM12 6.837a5.163 5.163 0 100 10.326 5.163 5.163 0 000-10.326zM12 15.25a3.25 3.25 0 110-6.5 3.25 3.25 0 010 6.5zM16.95 6.3a1.25 1.25 0 100 2.5 1.25 1.25 0 000-2.5z"
+                clip-rule="evenodd"
+              /></svg
+          ></a>
+          <a
+            href="https://note.com/demo___"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-gray-400 hover:text-white transition-colors"
+            title="Note"
+            ><svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M18.527 5.053c.422-.053 1.014.053 1.227.427.213.373.053.906-.107 1.28l-5.333 11.253c-.213.48-.693.8-1.227.854-.427.053-1.013-.053-1.227-.427-.213-.373-.053-.907.107-1.28L17.28 6.66c.213-.48.693-.8 1.227-.854L18.527 5.053zm-6.08 1.44a.8.8 0 01.8.8v9.413a.8.8 0 01-1.6 0V7.293a.8.8 0 01.8-.8zM5.473 11.887c.053-.427.427-.747.854-.8.426-.053.8.16 1.013.533l2.293 4.8c.214.427.16.96-.106 1.334-.267.373-.747.586-1.227.533-.053.053-.053.053 0 0-.427-.053-.8-.32-1.013-.693l-2.294-4.8c-.213-.427-.16-.96.107-1.334.266-.373.746-.586 1.226-.533h.107z"
+              /></svg
+          ></a>
+          <a
+            href="https://github.com/Takikoboworkshopgithub"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-gray-400 hover:text-white transition-colors"
+            title="GitHub"
+            ><svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                fill-rule="evenodd"
+                d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.168 6.839 9.492.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.82c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.378.203 2.398.1 2.651.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.942.359.308.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z"
+                clip-rule="evenodd"
+              /></svg
+          ></a>
+        </div>
+        <p>&copy; 2025 Takiguchi Workshop. All Rights Reserved.</p>
+      </div>
+    </footer>
+
+    <script>
+      // ===============================================
+      // NOTE: ブログ記事のデータをここで管理します
+      // ===============================================
+      const blogPosts = [
+        {
+          date: '2025.10.08',
+          title: 'ウェブサイトを公開しました！',
+          summary: '見切り発車ですが、取り敢えず公開しました。よろしくお願いします。',
+          link: '#'
+        },
+        {
+          date: '2025.06.22',
+          title: 'サイト/競プロのためのPythonチートシートを作成しました',
+          summary: 'ICPCも近いしいったんまとめておこうということで',
+          link: './Blogs/20250622.html'
+        },
+        {
+          date: '2025.05.26',
+          title: 'サイト/wavファイルを左右に分けるだけのサイトを作りました',
+          summary: 'タイトルのままです。githubにもコードを貼っています。',
+          link: './Blogs/20250526.html'
+        }
+      ];
+
+      document.addEventListener('DOMContentLoaded', function () {
+        // DOM Elements
+        const header = document.getElementById('header');
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const heroVideo = document.getElementById('hero-video');
+        const heroVideoContainer = document.getElementById('hero-video-container');
+        const sitemapToggle = document.getElementById('sitemap-toggle');
+        const sitemapMenu = document.getElementById('sitemap-menu');
+
+        // ===============================================
+        // Header, Mobile Menu, and Sitemap Control
+        // ===============================================
+        function updateHeaderState() {
+          const isScrolled = window.scrollY > 50;
+          header.classList.toggle('header-scrolled', isScrolled);
+          header.classList.toggle('header-dark-mode', !isScrolled);
+        }
+
+        mobileMenuToggle.addEventListener('click', () => {
+          mobileMenu.classList.toggle('hidden');
+        });
+
+        sitemapToggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isHidden = sitemapMenu.classList.toggle('hidden');
+          if (!isHidden) {
+            sitemapMenu.classList.remove('opacity-0', '-translate-y-4');
+          } else {
+            sitemapMenu.classList.add('opacity-0', '-translate-y-4');
+          }
+        });
+
+        // Close sitemap/menu when clicking outside or on a link
+        document.addEventListener('click', () => {
+          sitemapMenu.classList.add('hidden', 'opacity-0', '-translate-y-4');
+        });
+        document.querySelectorAll('.mobile-nav-link, .sitemap-link').forEach((link) => {
+          link.addEventListener('click', () => {
+            mobileMenu.classList.add('hidden');
+            sitemapMenu.classList.add('hidden', 'opacity-0', '-translate-y-4');
+          });
+        });
+        sitemapMenu.addEventListener('click', (e) => e.stopPropagation());
+
+        // ===============================================
+        // Video and Blog Rendering
+        // ===============================================
+        if (heroVideo) {
+          heroVideo.addEventListener('ended', () => heroVideoContainer.classList.add('is-darkened'));
+        }
+
+        function renderBlogPosts() {
+          const container = document.getElementById('blog-posts-container');
+          if (!container) return;
+
+          let html = '';
+          blogPosts.slice(0, 3).forEach((post, index) => {
+            html += `
+              <div class="fade-in" style="--fade-delay: ${(index + 1) * 0.1}s">
+                <a href="${post.link}" target="_blank" rel="noopener noreferrer" class="blog-post-link">
+                  <p class="text-sm text-gray-400">${post.date}</p>
+                  <h3 class="text-2xl font-bold mt-2 text-accent-blue transition-colors duration-300">${post.title}</h3>
+                  <p class="mt-3 text-gray-300 leading-relaxed">${post.summary}</p>
+                </a>
+              </div>
+            `;
+            // Add divider except for the last post
+            if (index < blogPosts.slice(0, 3).length - 1) {
+              html += '<hr class="blog-divider" />';
+            }
+          });
+          container.innerHTML = html;
+        }
+
+        // ===============================================
+        // Intersection Observers
+        // ===============================================
+
+        // --- Fade-in Animation Observer ---
+        const appearObserver = new IntersectionObserver(
+          (entries, observer) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+        );
+
+        function observeFadeInElements() {
+          document.querySelectorAll('.fade-in:not(.is-visible)').forEach((fader) => {
+            if (!fader.closest('#home')) {
+              appearObserver.observe(fader);
+            }
+          });
+        }
+
+        // --- Nav Link Active State Observer ---
+        const sectionObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                const activeSectionId = entry.target.id;
+                document.querySelectorAll('.nav-link').forEach((link) => {
+                  link.classList.toggle('active', link.dataset.section === activeSectionId);
+                });
+              }
+            });
+          },
+          { rootMargin: '-40% 0px -40% 0px', threshold: 0.2 }
+        );
+
+        document.querySelectorAll('section[id]').forEach((section) => {
+          sectionObserver.observe(section);
+        });
+
+        // --- NEW: Skills Section Scroll Gate Observer ---
+        const skillsGate = document.getElementById('skills-gate');
+        const skillsSection = document.getElementById('skills');
+        let hasBeenTriggered = false; // Prevent re-triggering when scrolling up
+
+        const gateObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              // Trigger only when scrolling down (isIntersecting) and it hasn't been triggered before
+              if (entry.isIntersecting && !hasBeenTriggered) {
+                hasBeenTriggered = true;
+                // Disable normal scroll temporarily
+                document.body.style.overflow = 'hidden';
+                // Smoothly scroll to the top of the skills section
+                skillsSection.scrollIntoView({ behavior: 'smooth' });
+                // Re-enable scroll after the transition
+                setTimeout(() => {
+                  document.body.style.overflow = '';
+                }, 1000); // Adjust time as needed
+              }
+              // Reset trigger if user scrolls back above the gate
+              if (!entry.isIntersecting && window.scrollY < entry.boundingClientRect.top) {
+                hasBeenTriggered = false;
+              }
+            });
+          },
+          { threshold: 1.0 }
+        );
+
+        if (skillsGate) {
+          gateObserver.observe(skillsGate);
+        }
+
+        // ===============================================
+        // Initializations
+        // ===============================================
+        window.addEventListener('scroll', updateHeaderState);
+        updateHeaderState();
+        renderBlogPosts();
+        observeFadeInElements();
+      });
+    </script>
+  </body>
+</html>

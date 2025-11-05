@@ -1,0 +1,23 @@
+[
+  {
+    "title": "Glass City",
+    "file": "./models/glass_city.glb",
+    "description": "透明素材を用いた都市の再現。光と屈折の演出を中心に構成。",
+    "thumbnail": "./images/thumbnails/glass_city.jpg",
+    "accentColorClass": "glow-blue"
+  },
+  {
+    "title": "Particle Room",
+    "file": "./models/particle_room.glb",
+    "description": "粒子とライティングを組み合わせた実験的VFX。",
+    "thumbnail": "./images/thumbnails/particle_room.jpg",
+    "accentColorClass": "glow-purple"
+  },
+  {
+    "title": "Drip Effect",
+    "file": "./models/vfx_drip.glb",
+    "description": "液体表現をベースにした動的VFX作品。",
+    "thumbnail": "./images/thumbnails/vfx_drip.jpg",
+    "accentColorClass": "glow-blue"
+  }
+]

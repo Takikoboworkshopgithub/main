@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Unity Portfolio - Rei</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Inter', 'Noto Sans JP', sans-serif;
+        background-color: #0a0a0a;
+        color: #f0f0f0;
+      }
+
+      #container {
+        display: flex;
+        height: calc(100vh - 150px);
+      }
+
+      /* 左メニュー */
+      #menu {
+        width: 140px;
+        background-color: #121212;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 20px;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+      }
+      #menu span {
+        writing-mode: horizontal-tb;
+        font-size: 1.4rem;
+        letter-spacing: 0.1rem;
+        margin-bottom: 40px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      #menu span svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      /* ページ先頭 */
+      #page-title {
+        text-align: center;
+        font-size: 2rem;
+        font-weight: bold;
+        padding: 20px 0;
+      }
+
+      /* 中央作品一覧 */
+      #works {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        gap: 20px;
+        overflow-y: auto;
+      }
+      .work-card {
+        display: flex;
+        flex-direction: row;
+        background-color: #1a1a1a;
+        border-radius: 10px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        height: 120px;
+        border: 2px solid transparent;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+      }
+      .work-card.selected {
+        border-color: #2595bb; /* 薄い青色に変更 */
+        box-shadow: 0 0 15px #add8e6;
+      }
+      .work-image {
+        width: 150px;
+        height: 100%;
+        object-fit: cover;
+      }
+      .work-info {
+        flex: 1;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 5px;
+      }
+      .work-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .work-type {
+        font-size: 0.9rem;
+        color: #000;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: bold;
+        width: fit-content;
+      }
+
+      /* 右詳細パネル */
+      #details {
+        width: 400px;
+        background-color: #121212;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+      }
+      #details video {
+        width: 100%;
+        border-radius: 8px;
+      }
+      #details h2 {
+        margin-top: 10px;
+        font-size: 1.5rem;
+      }
+      #details p {
+        margin-top: 10px;
+        font-size: 1rem;
+        line-height: 1.4;
+      }
+      #details a {
+        margin-top: 20px;
+        background-color: #38ef7d;
+        color: #000;
+        text-align: center;
+        padding: 10px;
+        border-radius: 6px;
+        font-weight: bold;
+        text-decoration: none;
+        transition: background-color 0.2s ease;
+      }
+      #details a:hover {
+        background-color: #2ac062;
+      }
+
+      #works::-webkit-scrollbar {
+        width: 8px;
+      }
+      #works::-webkit-scrollbar-thumb {
+        background-color: #555;
+        border-radius: 4px;
+      }
+      #works::-webkit-scrollbar-track {
+        background-color: #1a1a1a;
+      }
+
+      footer {
+        background-color: #121212;
+        color: #aaa;
+        text-align: center;
+        padding: 20px;
+        font-size: 0.8rem;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="page-title">Game Works</div>
+    <div id="container">
+      <!-- 左メニュー -->
+      <div id="menu">
+        <span>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16M8 8h8M8 16h8"></path>
+          </svg>
+          Works
+        </span>
+      </div>
+
+      <!-- 中央作品一覧 -->
+      <div id="works"></div>
+
+      <!-- 右詳細 -->
+      <div id="details">
+        <video id="detail-video" controls src=""></video>
+        <div>
+          <h2 id="detail-title">Select a Work</h2>
+          <p id="detail-desc">Click a work on the left to see details.</p>
+        </div>
+        <a id="detail-link" href="#" target="_blank">OPEN</a>
+      </div>
+    </div>
+
+    <footer>
+      &copy; 2025 Takiguchi Workshop<br />
+      このページの作品は 表示—非営利—改変禁止
+    </footer>
+
+    <script>
+      const worksContainer = document.getElementById('works');
+      const detailVideo = document.getElementById('detail-video');
+      const detailTitle = document.getElementById('detail-title');
+      const detailDesc = document.getElementById('detail-desc');
+      const detailLink = document.getElementById('detail-link');
+
+      const typeColors = {
+        '2D': '#38ef7d',
+        '3D': '#1e40af',
+        Scratch: '#f97316'
+      };
+
+      fetch('./project/projects.json')
+        .then((res) => res.json())
+        .then((data) => {
+          let first = true;
+          data.forEach((work) => {
+            const card = document.createElement('div');
+            card.className = 'work-card';
+            const typeColor = typeColors[work.type] || '#aaa';
+            card.innerHTML = `
+              <img src="${work.thumbnail}" class="work-image" />
+              <div class="work-info">
+                <div class="work-title">${work.title} <span class="work-type" style="background-color: ${typeColor}">${work.type}</span></div>
+                <div class="work-desc">${work.short}</div>
+              </div>
+            `;
+            card.addEventListener('click', () => {
+              selectWork(work, card);
+            });
+            worksContainer.appendChild(card);
+
+            if (first) {
+              selectWork(work, card);
+              first = false;
+            }
+          });
+        })
+        .catch((err) => console.error('JSON読み込みエラー:', err));
+
+      function selectWork(work, card) {
+        document.querySelectorAll('.work-card').forEach((c) => c.classList.remove('selected'));
+        card.classList.add('selected');
+
+        detailVideo.src = work.video;
+        detailTitle.textContent = work.title;
+        detailDesc.textContent = work.description;
+        detailLink.href = work.link;
+
+        // 自動再生＆ループを確実にする
+        detailVideo.loop = true;
+        detailVideo.muted = true; // ブラウザの自動再生制限回避
+        detailVideo.play().catch((err) => console.log('再生エラー:', err));
+      }
+    </script>
+  </body>
+</html>
