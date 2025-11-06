@@ -8,12 +8,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <style>
       body {
         font-family: 'Inter', 'Noto Sans JP', sans-serif;
         background-color: #050505;
         color: #f0f0f0;
-        transition: background-color 0.8s ease;
+        /* transition: background-color 0.8s ease; <- GSAPで制御するため残すか、削除してもOK */
       }
 
       #hero-section {
@@ -43,7 +45,7 @@
         mix-blend-mode: color; /* Tints the B&W video */
         opacity: 0; /* Start hidden */
         z-index: -3; /* Between the two videos */
-        transition: background-color 0.8s ease, opacity 0.8s ease;
+        /* transition: background-color 0.8s ease, opacity 0.8s ease; <- GSAPで制御 */
       }
       #hero-video {
         position: absolute;
@@ -67,7 +69,7 @@
       #main-content {
         background-color: var(--bg-color, #050505);
         min-height: 100vh;
-        transition: background-color 0.8s ease;
+        /* transition: background-color 0.8s ease; <- GSAPで制御 */
         position: relative;
         z-index: 10;
       }
@@ -114,7 +116,8 @@
       }
 
       .album-jacket {
-        transition: transform 0.3s ease, box-shadow 0.3s ease, display 0.3s ease;
+        /* transition: transform 0.3s ease, box-shadow 0.3s ease, display 0.3s ease; <- GSAPで登場アニメを制御するため、transform/displayは不要 */
+        transition: box-shadow 0.3s ease;
         border: 2px solid transparent;
         cursor: pointer;
       }
@@ -126,13 +129,11 @@
         box-shadow: 0 0 20px var(--wave-color, #38ef7d);
       }
 
+      /* ▼ トラックリストの展開をGSAPで制御するためCSSを修正 ▼ */
       #tracklist-container {
-        max-height: 0;
+        height: 0; /* max-heightをheightに変更 */
         overflow: hidden;
-        transition: max-height 0.6s ease-out;
-      }
-      #tracklist-container.is-open {
-        max-height: 1000px;
+        /* max-heightと.is-openのCSSは削除 */
       }
 
       /* コントロールボタン */
@@ -354,6 +355,10 @@
 
     <script>
       document.addEventListener('DOMContentLoaded', () => {
+        // ▼ GSAPの登録 ▼
+        gsap.registerPlugin(ScrollTrigger);
+        // ▲ GSAPの登録 ▲
+
         const waveformEl = document.getElementById('waveform');
         const flatlineEl = document.getElementById('waveform-flatline');
         const galleryEl = document.getElementById('album-gallery');
@@ -362,6 +367,7 @@
         const mainContent = document.getElementById('main-content');
         const heroBgOverlay = document.getElementById('hero-video-bg-overlay');
         const searchBox = document.getElementById('search-box');
+        const heroText = document.getElementById('hero-text'); // イントロ用
 
         const playPauseBtn = document.getElementById('play-pause');
         const nextBtn = document.getElementById('next');
@@ -373,6 +379,14 @@
         let currentTrackIndex = -1;
         let currentBtn = null;
 
+        // ▼ イントロアニメーション ▼
+        const introTl = gsap.timeline();
+        introTl
+          .from(heroText, { opacity: 0, y: 50, duration: 1.2, ease: 'power3.out' })
+          // 背景のオーバーレイが薄く出現する演出
+          .from(heroBgOverlay, { opacity: 0.1, duration: 1.5, ease: 'sine.inOut' }, '-=0.8');
+        // ▲ イントロアニメーション ▲
+
         fetch('./albums.json')
           .then((res) => res.json())
           .then((data) => {
@@ -380,8 +394,45 @@
             initWaveSurfer();
             renderAlbumGallery();
             showFlatline(true);
-            updateColors({ background: '#050505', wave: '#38ef7d' }); // Initial color set
+            updateColors({ background: '#050505', wave: '#38ef7d' }, false); // Initial color set (GSAPアニメーションなし)
+
+            // ▼ GSAP ScrollTriggerの初期化 ▼
+            initGSAPScroll();
           });
+
+        function initGSAPScroll() {
+          // スクロール時の背景色オーバーレイ（AviUtlのフェード演出風）
+          ScrollTrigger.create({
+            trigger: mainContent,
+            start: 'top 90%', // main-contentが90%の位置に来たときに開始
+            end: 'top 30%',
+            scrub: true,
+            onUpdate: (self) => {
+              // スクロールに応じてオーバーレイの透明度を調整
+              gsap.to(heroBgOverlay, {
+                opacity: 0.8 * self.progress, // 0から0.8まで変化
+                duration: 0.1,
+                overwrite: true
+              });
+            }
+          });
+
+          // アルバムジャケットの出現アニメーション
+          gsap.from('.album-jacket', {
+            opacity: 0,
+            y: 50,
+            scale: 0.9,
+            stagger: 0.1, // ずらし時間
+            duration: 1.0,
+            ease: 'back.out(1.7)',
+            scrollTrigger: {
+              trigger: galleryEl,
+              start: 'top 90%', // アルバム一覧が表示域に入ったら開始
+              once: true // 一度だけ実行
+            }
+          });
+        }
+        // ▲ GSAP ScrollTriggerの初期化 ▲
 
         function initWaveSurfer() {
           wavesurfer = WaveSurfer.create({
@@ -403,6 +454,11 @@
             playPauseBtn.classList.remove('is-playing');
             if (currentBtn) currentBtn.textContent = '▶';
           });
+
+          // ▼ 音量連動エフェクト (例) ▼
+          // wavesurfer.on('audioprocess', () => {
+          //   // リアルタイムでの音量取得は通常プラグインが必要ですが、今回は単純な反応として保留
+          // });
         }
 
         function renderAlbumGallery() {
@@ -422,7 +478,15 @@
           img.classList.add('is-active');
           currentAlbum = album;
           renderTracklist(album.tracks, album); // Pass album for colors
-          tracklistContainerEl.classList.add('is-open');
+
+          // ▼ トラックリストの展開をGSAPで実行 ▼
+          gsap.to(tracklistContainerEl, {
+            height: 'auto',
+            duration: 0.8,
+            ease: 'power3.out',
+            overwrite: true
+          });
+          // ▲ トラックリストの展開をGSAPで実行 ▲
         }
 
         function renderTracklist(tracks, album) {
@@ -458,7 +522,7 @@
           if (!currentAlbum) return;
 
           // Change global colors when a track is played
-          updateColors(currentAlbum.color);
+          updateColors(currentAlbum.color, true); // GSAPアニメーションを有効に
 
           const track = currentAlbum.tracks[index];
           const isSame = index === currentTrackIndex;
@@ -533,19 +597,33 @@
           return tracklistContentEl.querySelector(`.play-btn[data-index="${i}"]`);
         }
 
-        function updateColors(color) {
-          mainContent.style.setProperty('--bg-color', color.background);
-          document.documentElement.style.setProperty('--wave-color', color.wave);
+        // ▼ GSAPを使った滑らかな色遷移に修正 ▼
+        function updateColors(color, useGsap = true) {
+          const duration = useGsap ? 0.8 : 0; // 初期設定時はアニメーションなし
 
-          // Only show tint if a non-default background is set
+          // GSAPで滑らかな色遷移を実現
+          gsap.to(document.documentElement, {
+            '--wave-color': color.wave,
+            duration: duration,
+            ease: 'power2.out'
+          });
+          gsap.to(mainContent, {
+            '--bg-color': color.background,
+            duration: duration,
+            ease: 'power2.out'
+          });
+
+          // 背景オーバーレイの透明度もGSAPで制御
           if (color.background !== '#050505') {
-            heroBgOverlay.style.opacity = '0.6'; // Adjust opacity as needed
+            gsap.to(heroBgOverlay, { opacity: '0.6', duration: duration });
           } else {
-            heroBgOverlay.style.opacity = '0';
+            // スクロールで制御しているため、この場所ではアニメーションをリセットしない
+            // heroBgOverlay.style.opacity = '0';
           }
 
           if (wavesurfer) wavesurfer.setOptions({ waveColor: color.wave });
         }
+        // ▲ GSAPを使った滑らかな色遷移に修正 ▲
 
         function showFlatline(show) {
           waveformEl.style.display = show ? 'none' : 'block';
@@ -569,9 +647,10 @@
             const trackMatch = album.tracks.some((t) => t.title.toLowerCase().includes(searchTerm));
 
             if (albumTitleMatch || trackMatch) {
-              jacket.style.display = 'block';
+              // 検索で再表示されるときもGSAPでアニメーションさせる
+              gsap.to(jacket, { display: 'block', opacity: 1, duration: 0.3 });
             } else {
-              jacket.style.display = 'none';
+              gsap.to(jacket, { display: 'none', opacity: 0, duration: 0.3 });
             }
           });
         }
