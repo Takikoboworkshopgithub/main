@@ -3,9 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Composing - Rei Portfolio</title>
+    <title>Composing - Takikobo_Portfolio</title>
 
-    <!-- TailwindCSS & WaveSurfer -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
 
@@ -24,6 +23,27 @@
         align-items: center;
         position: relative;
         overflow: hidden;
+      }
+      #hero-video-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -4; /* Furthest back */
+      }
+      #hero-video-bg-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: var(--wave-color, #38ef7d);
+        mix-blend-mode: color; /* Tints the B&W video */
+        opacity: 0; /* Start hidden */
+        z-index: -3; /* Between the two videos */
+        transition: background-color 0.8s ease, opacity 0.8s ease;
       }
       #hero-video {
         position: absolute;
@@ -71,6 +91,7 @@
       #waveform {
         width: 90%;
         display: none;
+        pointer-events: all; /* Allow seeking on waveform */
       }
 
       #waveform-flatline {
@@ -93,7 +114,7 @@
       }
 
       .album-jacket {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, display 0.3s ease;
         border: 2px solid transparent;
         cursor: pointer;
       }
@@ -122,24 +143,170 @@
         margin-top: 10px;
         pointer-events: all;
       }
-
       #player-controls button {
+        --color: var(--wave-color, #38ef7d);
         background: transparent;
-        border: none;
-        color: var(--wave-color, #38ef7d);
-        font-size: 1.8rem;
+        border: none; /* 枠を削除 */
+        width: 3rem;
+        height: 3rem;
+        position: relative;
         cursor: pointer;
-        transition: transform 0.2s;
+        transition: transform 0.2s ease;
+        display: flex;
+        align-items: center; /* 縦中央 */
+        justify-content: center; /* 横中央 */
       }
 
       #player-controls button:hover {
-        transform: scale(1.2);
+        transform: scale(1.15);
+      }
+
+      #player-controls {
+        display: flex;
+        justify-content: center;
+        gap: 1.2rem;
+        margin-top: 1rem;
+        padding: 0.6rem 1rem;
+        border-radius: 1rem;
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(6px);
+      }
+
+      /* 各ボタン共通スタイル */
+      #player-controls button {
+        --color: var(--wave-color, #38ef7d);
+        background: transparent;
+        border: none; /* 枠線削除 */
+        width: 3rem;
+        height: 3rem;
+        position: relative;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        display: flex;
+        align-items: center; /* 縦中央 */
+        justify-content: center; /* 横中央 */
+      }
+
+      #player-controls button:hover {
+        transform: scale(1.15);
+      }
+
+      /* 再生/一時停止 トグル */
+      #play-pause::before {
+        /* Play icon */
+        content: '';
+        position: absolute;
+        left: 40%;
+        top: 28%;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 8px 0 8px 12px;
+        border-color: transparent transparent transparent var(--color);
+        transition: all 0.2s ease;
+        opacity: 1;
+      }
+
+      #play-pause.is-playing::before {
+        border-width: 0; /* Hide play triangle */
+        width: 4px; /* Pause bar */
+        height: 16px;
+        background: var(--color);
+        border-radius: 1px;
+        left: 35%;
+        top: 25%;
+        opacity: 1;
+      }
+
+      #play-pause::after {
+        /* Second pause bar */
+        content: '';
+        position: absolute;
+        top: 25%;
+        width: 4px;
+        height: 16px;
+        background: var(--color);
+        border-radius: 1px;
+        right: 35%;
+        opacity: 0; /* Hidden by default */
+        transition: opacity 0.2s ease;
+      }
+
+      #play-pause.is-playing::after {
+        opacity: 1; /* Show second pause bar */
+      }
+
+      /* 停止 ⏹ (REMOVED) */
+
+      /* 次 ⏭ */
+      #next::before,
+      #next::after {
+        content: '';
+        position: absolute;
+        top: 28%;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 8px 0 8px 12px;
+        border-color: transparent transparent transparent var(--color);
+      }
+      #next::before {
+        left: 20%;
+      }
+      #next::after {
+        left: 50%;
+      }
+
+      /* 前 ⏮ */
+      #prev::before,
+      #prev::after {
+        content: '';
+        position: absolute;
+        top: 28%;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 8px 12px 8px 0;
+        border-color: transparent var(--color) transparent transparent;
+      }
+      #prev::before {
+        left: 20%;
+      }
+      #prev::after {
+        left: 50%;
+      }
+
+      /* Loading Spinner for track buttons */
+      .play-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem; /* Ensure consistent size */
+        height: 2rem; /* Ensure consistent size */
+      }
+      .loading-spinner {
+        width: 1.25rem; /* 20px */
+        height: 1.25rem; /* 20px */
+        border: 3px solid transparent;
+        border-top-color: var(--wave-color, #38ef7d);
+        border-right-color: var(--wave-color, #38ef7d);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
       }
     </style>
   </head>
 
   <body>
     <section id="hero-section">
+      <video id="hero-video-bg" autoplay loop muted playsinline>
+        <source src="./videos/Composing.mp4" type="video/mp4" />
+      </video>
+      <div id="hero-video-bg-overlay"></div>
       <video id="hero-video" autoplay loop muted playsinline>
         <source src="./videos/intro.mp4" type="video/mp4" />
       </video>
@@ -150,8 +317,20 @@
     </section>
 
     <main id="main-content" class="pt-20 md:pt-32 pb-60">
-      <div class="container mx-auto px-6 max-w-6xl">
-        <section id="album-gallery" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-10"></section>
+      <div class="container mx-auto px-6 max-w-6xl relative">
+        <div class="absolute top-0 right-6 z-20" style="margin-top: -3rem">
+          <input
+            type="search"
+            id="search-box"
+            placeholder="Search albums or tracks..."
+            class="bg-gray-800 text-white rounded-full px-4 py-2 ring-1 ring-gray-700 focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-sky-500 outline-none transition-all"
+          />
+        </div>
+
+        <section
+          id="album-gallery"
+          class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-10 pt-12"
+        ></section>
         <section id="tracklist-container" class="mt-16">
           <div id="tracklist-content" class="max-w-4xl mx-auto bg-black/30 p-6 rounded-lg"></div>
         </section>
@@ -162,17 +341,14 @@
       <p>&copy; 2025 Takiguchi Workshop</p>
     </footer>
 
-    <!-- 波形 -->
     <div id="waveform-container">
       <div id="waveform"></div>
       <div id="waveform-flatline"></div>
 
-      <div id="player-controls">
-        <button id="prevBtn">⏮</button>
-        <button id="playBtn">▶️</button>
-        <button id="pauseBtn">⏸</button>
-        <button id="stopBtn">⏹</button>
-        <button id="nextBtn">⏭</button>
+      <div id="player-controls" data-color="#38ef7d">
+        <button id="prev"></button>
+        <button id="play-pause"></button>
+        <button id="next"></button>
       </div>
     </div>
 
@@ -184,12 +360,12 @@
         const tracklistContainerEl = document.getElementById('tracklist-container');
         const tracklistContentEl = document.getElementById('tracklist-content');
         const mainContent = document.getElementById('main-content');
+        const heroBgOverlay = document.getElementById('hero-video-bg-overlay');
+        const searchBox = document.getElementById('search-box');
 
-        const playBtn = document.getElementById('playBtn');
-        const pauseBtn = document.getElementById('pauseBtn');
-        const stopBtn = document.getElementById('stopBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const prevBtn = document.getElementById('prevBtn');
+        const playPauseBtn = document.getElementById('play-pause');
+        const nextBtn = document.getElementById('next');
+        const prevBtn = document.getElementById('prev');
 
         let wavesurfer = null;
         let albums = [];
@@ -204,7 +380,7 @@
             initWaveSurfer();
             renderAlbumGallery();
             showFlatline(true);
-            updateColors({ background: '#050505', wave: '#38ef7d' });
+            updateColors({ background: '#050505', wave: '#38ef7d' }); // Initial color set
           });
 
         function initWaveSurfer() {
@@ -219,6 +395,14 @@
             responsive: true
           });
           wavesurfer.on('finish', () => nextTrack());
+          wavesurfer.on('play', () => {
+            playPauseBtn.classList.add('is-playing');
+            if (currentBtn) currentBtn.textContent = '⏸';
+          });
+          wavesurfer.on('pause', () => {
+            playPauseBtn.classList.remove('is-playing');
+            if (currentBtn) currentBtn.textContent = '▶';
+          });
         }
 
         function renderAlbumGallery() {
@@ -237,22 +421,32 @@
           document.querySelectorAll('.album-jacket').forEach((el) => el.classList.remove('is-active'));
           img.classList.add('is-active');
           currentAlbum = album;
-          updateColors(album.color);
-          renderTracklist(album.tracks);
+          renderTracklist(album.tracks, album); // Pass album for colors
           tracklistContainerEl.classList.add('is-open');
         }
 
-        function renderTracklist(tracks) {
+        function renderTracklist(tracks, album) {
           tracklistContentEl.innerHTML = '';
           tracks.forEach((t, i) => {
             const div = document.createElement('div');
             div.className =
               'track-item flex items-center justify-between p-4 border-b border-gray-700 hover:bg-gray-800/50';
+
+            // Use album color for play and download buttons
+            const trackColor = album.color.wave || 'var(--wave-color, #38ef7d)';
+
             div.innerHTML = `
               <div class="flex items-center gap-4">
-                <button data-index="${i}" class="play-btn text-2xl" style="color: var(--wave-color,#38ef7d);">▶</button>
+                <button data-index="${i}" class="play-btn text-2xl" style="color: ${trackColor};">▶</button>
                 <div><h4 class="text-lg font-semibold">${t.title}</h4></div>
-              </div>`;
+              </div>
+              <a href="${t.file}" download="${t.title}" class="download-btn p-2 rounded-full hover:bg-gray-700/50 transition-colors" style="color: ${trackColor};" title="Download ${t.title}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+              </a>`;
             tracklistContentEl.appendChild(div);
           });
           tracklistContentEl
@@ -262,38 +456,66 @@
 
         function playTrack(index, btn) {
           if (!currentAlbum) return;
+
+          // Change global colors when a track is played
+          updateColors(currentAlbum.color);
+
           const track = currentAlbum.tracks[index];
           const isSame = index === currentTrackIndex;
 
           if (isSame && wavesurfer.isPlaying()) {
             wavesurfer.pause();
             btn.textContent = '▶';
+            btn.classList.remove('loading-spinner');
             return;
           }
 
-          if (currentBtn && currentBtn !== btn) currentBtn.textContent = '▶';
+          // Reset previous button if it exists and is different
+          if (currentBtn && currentBtn !== btn) {
+            currentBtn.textContent = '▶';
+            currentBtn.classList.remove('loading-spinner');
+          }
+
           currentBtn = btn;
           currentTrackIndex = index;
           showFlatline(false);
+
+          // Show loading spinner
+          btn.textContent = '';
+          btn.classList.add('loading-spinner');
+
           wavesurfer.load(track.file);
           wavesurfer.once('ready', () => {
             wavesurfer.play();
+            // Remove spinner and show pause icon
+            btn.classList.remove('loading-spinner');
             btn.textContent = '⏸';
+            playPauseBtn.classList.add('is-playing');
           });
         }
 
         // --- 再生制御 ---
-        playBtn.addEventListener('click', () => {
-          if (!wavesurfer.isPlaying()) wavesurfer.play();
+        playPauseBtn.addEventListener('click', () => {
+          if (wavesurfer.isReady) {
+            wavesurfer.playPause();
+          } else if (currentAlbum) {
+            // If no track is loaded, play the first one from current album
+            playTrack(0, getBtnByIndex(0));
+          }
         });
-        pauseBtn.addEventListener('click', () => wavesurfer.pause());
-        stopBtn.addEventListener('click', () => {
-          wavesurfer.stop();
-          showFlatline(true);
-          if (currentBtn) currentBtn.textContent = '▶';
-        });
+
         nextBtn.addEventListener('click', nextTrack);
-        prevBtn.addEventListener('click', prevTrack);
+
+        prevBtn.addEventListener('click', () => {
+          if (!currentAlbum) return;
+          const currentTime = wavesurfer.getCurrentTime();
+
+          if (currentTime > 3) {
+            wavesurfer.seekTo(0); // Go to beginning of current track
+          } else {
+            prevTrack(); // Go to actual previous track
+          }
+        });
 
         function nextTrack() {
           if (!currentAlbum) return;
@@ -314,6 +536,14 @@
         function updateColors(color) {
           mainContent.style.setProperty('--bg-color', color.background);
           document.documentElement.style.setProperty('--wave-color', color.wave);
+
+          // Only show tint if a non-default background is set
+          if (color.background !== '#050505') {
+            heroBgOverlay.style.opacity = '0.6'; // Adjust opacity as needed
+          } else {
+            heroBgOverlay.style.opacity = '0';
+          }
+
           if (wavesurfer) wavesurfer.setOptions({ waveColor: color.wave });
         }
 
@@ -321,6 +551,45 @@
           waveformEl.style.display = show ? 'none' : 'block';
           flatlineEl.style.display = show ? 'block' : 'none';
         }
+
+        // --- Search ---
+        searchBox.addEventListener('input', handleSearch);
+
+        function handleSearch(e) {
+          const searchTerm = e.target.value.toLowerCase();
+          const allJackets = galleryEl.querySelectorAll('.album-jacket');
+
+          if (!allJackets.length || !albums.length) return;
+
+          allJackets.forEach((jacket, index) => {
+            const album = albums[index]; // Relies on render order
+            if (!album) return;
+
+            const albumTitleMatch = album.title.toLowerCase().includes(searchTerm);
+            const trackMatch = album.tracks.some((t) => t.title.toLowerCase().includes(searchTerm));
+
+            if (albumTitleMatch || trackMatch) {
+              jacket.style.display = 'block';
+            } else {
+              jacket.style.display = 'none';
+            }
+          });
+        }
+
+        // --- Keyboard controls for seeking ---
+        document.addEventListener('keydown', (e) => {
+          if (!wavesurfer || !wavesurfer.isReady) return; // Only if WS is active
+          // Prevent search box interference
+          if (document.activeElement === searchBox) return;
+
+          if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            wavesurfer.skip(-5); // Skip back 5 seconds
+          } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            wavesurfer.skip(5); // Skip forward 5 seconds
+          }
+        });
       });
     </script>
   </body>

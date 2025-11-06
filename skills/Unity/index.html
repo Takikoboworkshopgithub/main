@@ -6,19 +6,17 @@
     <title>Unity Portfolio - Rei</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+      /* --- CSSは変更ありません --- */
       body {
         margin: 0;
         font-family: 'Inter', 'Noto Sans JP', sans-serif;
         background-color: #0a0a0a;
         color: #f0f0f0;
       }
-
       #container {
         display: flex;
         height: calc(100vh - 150px);
       }
-
-      /* 左メニュー */
       #menu {
         width: 140px;
         background-color: #121212;
@@ -41,16 +39,12 @@
         width: 24px;
         height: 24px;
       }
-
-      /* ページ先頭 */
       #page-title {
         text-align: center;
         font-size: 2rem;
         font-weight: bold;
         padding: 20px 0;
       }
-
-      /* 中央作品一覧 */
       #works {
         flex: 1;
         display: flex;
@@ -72,7 +66,7 @@
         box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
       }
       .work-card.selected {
-        border-color: #2595bb; /* 薄い青色に変更 */
+        border-color: #2595bb;
         box-shadow: 0 0 15px #add8e6;
       }
       .work-image {
@@ -103,8 +97,6 @@
         font-weight: bold;
         width: fit-content;
       }
-
-      /* 右詳細パネル */
       #details {
         width: 400px;
         background-color: #121212;
@@ -141,7 +133,6 @@
       #details a:hover {
         background-color: #2ac062;
       }
-
       #works::-webkit-scrollbar {
         width: 8px;
       }
@@ -152,7 +143,6 @@
       #works::-webkit-scrollbar-track {
         background-color: #1a1a1a;
       }
-
       footer {
         background-color: #121212;
         color: #aaa;
@@ -160,13 +150,75 @@
         padding: 20px;
         font-size: 0.8rem;
       }
+      @media (max-width: 1024px) {
+        #container {
+          flex-direction: column;
+          height: auto;
+        }
+        #menu {
+          display: none;
+        }
+        #works {
+          width: 100%;
+          padding: 10px;
+          height: auto;
+          overflow-y: visible;
+        }
+        #container > #details {
+          width: 100%;
+          padding: 10px;
+          height: auto;
+          box-shadow: none;
+        }
+        #works > #details {
+          width: auto;
+          background-color: #121212;
+          padding: 20px;
+          margin-top: 20px;
+          margin-bottom: 20px;
+          border-radius: 10px;
+          box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+          justify-content: space-between;
+          display: flex;
+          flex-direction: column;
+        }
+        .work-card {
+          flex-direction: column;
+          height: auto;
+        }
+        .work-image {
+          width: 100%;
+          height: 180px;
+          object-fit: cover;
+        }
+        .work-info {
+          padding: 15px;
+        }
+        #page-title {
+          font-size: 1.5rem;
+          padding: 15px 0;
+        }
+        footer {
+          padding: 15px;
+        }
+      }
+      @media (max-width: 480px) {
+        .work-title {
+          font-size: 1.1rem;
+        }
+        #details h2 {
+          font-size: 1.3rem;
+        }
+        #details p {
+          font-size: 0.9rem;
+        }
+      }
     </style>
   </head>
 
   <body>
     <div id="page-title">Game Works</div>
     <div id="container">
-      <!-- 左メニュー -->
       <div id="menu">
         <span>
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -176,10 +228,8 @@
         </span>
       </div>
 
-      <!-- 中央作品一覧 -->
       <div id="works"></div>
 
-      <!-- 右詳細 -->
       <div id="details">
         <video id="detail-video" controls src=""></video>
         <div>
@@ -201,6 +251,8 @@
       const detailTitle = document.getElementById('detail-title');
       const detailDesc = document.getElementById('detail-desc');
       const detailLink = document.getElementById('detail-link');
+      const detailsElement = document.getElementById('details');
+      const containerElement = document.getElementById('container');
 
       const typeColors = {
         '2D': '#38ef7d',
@@ -229,27 +281,87 @@
             worksContainer.appendChild(card);
 
             if (first) {
-              selectWork(work, card);
+              selectWork(work, card); // 最初の作品を選択
               first = false;
             }
           });
+          // (削除) ページ読み込み時のhandleResizeはselectWork内で処理される
         })
         .catch((err) => console.error('JSON読み込みエラー:', err));
 
-      function selectWork(work, card) {
+      // --- ▼ 修正 (ここから) ▼ ---
+
+      // 詳細パネルを非表示（閉じる）にする共通関数
+      function hideDetails() {
+        detailsElement.remove(); // DOMツリーから削除
+        detailVideo.pause();
+        detailVideo.src = ''; // ソースもクリア
+        // すべてのカードの選択状態を解除
         document.querySelectorAll('.work-card').forEach((c) => c.classList.remove('selected'));
-        card.classList.add('selected');
-
-        detailVideo.src = work.video;
-        detailTitle.textContent = work.title;
-        detailDesc.textContent = work.description;
-        detailLink.href = work.link;
-
-        // 自動再生＆ループを確実にする
-        detailVideo.loop = true;
-        detailVideo.muted = true; // ブラウザの自動再生制限回避
-        detailVideo.play().catch((err) => console.log('再生エラー:', err));
       }
+
+      function selectWork(work, card) {
+        const isAlreadySelected = card.classList.contains('selected');
+
+        if (isAlreadySelected) {
+          // --- 同じカードをクリックした場合 (閉じる) ---
+          hideDetails();
+          // handleResize は呼ばない
+        } else {
+          // --- 別のカードをクリックした場合 (開く) ---
+
+          // まず、すべての選択状態をリセット
+          document.querySelectorAll('.work-card').forEach((c) => c.classList.remove('selected'));
+          // クリックしたカードを選択状態に
+          card.classList.add('selected');
+
+          // 詳細情報を更新
+          detailVideo.src = work.video;
+          detailTitle.textContent = work.title;
+          detailDesc.textContent = work.description;
+          detailLink.href = work.link;
+
+          // 自動再生＆ループを確実にする
+          detailVideo.loop = true;
+          detailVideo.muted = true;
+          detailVideo.play().catch((err) => console.log('再生エラー:', err));
+
+          // handleResizeを呼んで正しい位置に表示
+          handleResize();
+        }
+      }
+
+      function handleResize() {
+        const isMobile = window.innerWidth <= 1024;
+        const selectedCard = worksContainer.querySelector('.work-card.selected');
+
+        // どのカードも選択されていない場合 (＝閉じている状態)
+        if (!selectedCard) {
+          detailsElement.remove(); // 念のためDOMから削除
+          return;
+        }
+
+        // --- ここからは selectedCard がある (＝開いている) 場合 ---
+
+        if (isMobile) {
+          // スマホ表示
+          // 選択中のカードの直後に移動
+          selectedCard.after(detailsElement);
+        } else {
+          // PC表示
+          // #container の末尾（#works の兄弟）に戻す
+          containerElement.appendChild(detailsElement);
+        }
+      }
+
+      // --- ▲ 修正 (ここまで) ▲ ---
+
+      // リサイズイベントを監視
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(handleResize, 100);
+      });
     </script>
   </body>
 </html>

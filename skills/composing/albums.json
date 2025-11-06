@@ -2,7 +2,7 @@
   {
     "id": "album1",
     "title": "GameMusicBand",
-    "jacket": "./images/jackets/album1.jpg",
+    "jacket": "./images/GameMusicBand.jpg",
     "color": {
       "background": "#0a050f",
       "wave": "#9d34da"
@@ -21,25 +21,18 @@
   {
     "id": "album2",
     "title": "The First UTAU",
-    "jacket": "./images/jackets/album2.jpg",
+    "jacket": "./images/TheFirstUTAU.jpg",
     "color": {
       "background": "#050f0a",
       "wave": "#38ef7d"
     },
-    "description": "自然と電子の融合。アンビエントなトラック集。",
+    "description": "UTAUをちょっと触ってみたくなった",
     "tracks": [
       {
         "title": "worlds tune",
         "file": "./UTAU/Worlds=Tune.mp3",
         "soundcloud": "https://soundcloud.com/example",
         "download": "./audio/album2/track1.mp3"
-      },
-      {
-        "title": "Orbit",
-        "file": "./audio/album1/track1.mp3",
-        "youtube": "https://youtube.com/example",
-        "soundcloud": "https://soundcloud.com/example",
-        "download": "./audio/album1/track1.mp3"
       }
     ]
   }
