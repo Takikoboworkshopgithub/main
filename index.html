@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
@@ -109,7 +109,9 @@
       .fade-in {
         opacity: 0;
         transform: translateY(20px);
-        transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        transition:
+          opacity 0.8s ease-out,
+          transform 0.8s ease-out;
         transition-delay: var(--fade-delay, 0s);
       }
       .fade-in.is-visible {
@@ -144,7 +146,9 @@
 
       /* --- NEW: Sitemap Styles --- */
       #sitemap-menu {
-        transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        transition:
+          opacity 0.3s ease-in-out,
+          transform 0.3s ease-in-out;
       }
 
       /* Skills Section */
@@ -190,7 +194,9 @@
         padding: 2.5rem;
         border-radius: 0.75rem;
         background-color: var(--color-secondary-dark);
-        transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+        transition:
+          transform 0.3s ease-out,
+          box-shadow 0.3s ease-out;
         border: 1px solid transparent;
       }
       .blog-post-link:hover {
@@ -341,7 +347,7 @@
             class="text-xl md:text-2xl mt-2 tracking-wider text-gray-300 fade-in is-visible"
             style="--fade-delay: 0.8s"
           >
-            Takiguchi Workshop
+            Takiguchi
           </p>
         </div>
 
@@ -362,27 +368,22 @@
       </section>
 
       <section id="about-site" class="py-20 md:py-32 bg-primary-dark">
-        <div class="container mx-auto px-6 max-w-4xl">
-          <h2 class="text-4xl font-bold text-center mb-10 fade-in text-accent-teal">
-            このサイトについて / About This Site
-          </h2>
-          <p class="mt-4 text-lg text-center text-gray-300 leading-relaxed fade-in" style="--fade-delay: 0.1s">
-            瀧口工房のサイトへようこそ。<br />
-            このサイトでは、私が作った作品や制作物の数々、ブログなどを発信していきます。
-          </p>
-        </div>
+        <div class="container mx-auto px-6 max-w-4xl"></div>
       </section>
 
       <section id="profile" class="py-20 md:py-32 bg-secondary-dark">
         <div class="container mx-auto px-6 max-w-4xl">
-          <h2 class="text-4xl font-bold text-center mb-16 fade-in text-accent-orange">自己紹介 / Profile</h2>
+          <h2 class="text-4xl font-bold text-center mb-16 fade-in text-accent-white">Profile<br /></h2>
 
           <div class="flex flex-col md:flex-row items-center gap-12 fade-in" style="--fade-delay: 0.1s">
             <img
               src="./images/profile.jpg"
               alt="瀧口のプロフィール画像"
-              onerror="this.onerror=null; this.src='https://placehold.co/240x240/D1D5DB/4B5563?text=Profile+Image';"
-              class="w-48 h-48 md:w-60 md:h-60 rounded-full object-cover shadow-lg border-4 border-accent-purple"
+              onerror="
+                this.onerror = null;
+                this.src = 'https://placehold.co/240x240/D1D5DB/4B5563?text=Profile+Image';
+              "
+              class="w-48 h-48 md:w-60 md:h-60 rounded-full object-cover shadow-lg border-4 border-accent-black"
             />
             <div class="text-center md:text-left">
               <h3 class="text-3xl font-bold">瀧口 (Takiguchi)</h3>
@@ -393,7 +394,7 @@
               </p>
               <div class="mt-6 flex justify-center md:justify-start space-x-5">
                 <a
-                  href="https://youtube.com/@taki_kobo"
+                  href="https://youtube.com/@瀧口工房"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="text-gray-400 hover:text-accent-orange transition-transform duration-200 transform hover:scale-110"
@@ -617,7 +618,7 @@
       <div class="container mx-auto px-6 text-center">
         <div class="mb-6 flex justify-center space-x-6">
           <a
-            href="https://youtube.com/@taki_kobo"
+            href="https://youtube.com/@瀧口工房"
             target="_blank"
             rel="noopener noreferrer"
             class="text-gray-400 hover:text-white transition-colors"
