@@ -6,9 +6,7 @@
     <title>AtCoder Records - Takiguchi Workshop</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
     <style>
@@ -50,42 +48,43 @@
       .hover\:bg-ac-blue-dark:hover {
         background-color: #286090;
       }
-      .border-ac-blue {
-        border-color: #337ab7;
+
+      /* AtCoderレートカラーパレット (JS連動用) */
+      .rating-color-gray {
+        color: #808080;
+      }
+      .rating-color-brown {
+        color: #804000;
+      }
+      .rating-color-green {
+        color: #008000;
+      }
+      .rating-color-cyan {
+        color: #00c0c0;
+      }
+      .rating-color-blue {
+        color: #0000ff;
+      }
+      .rating-color-yellow {
+        color: #c0c000;
+      }
+      .rating-color-orange {
+        color: #ff8000;
+      }
+      .rating-color-red {
+        color: #ff0000;
       }
 
-      /* レート色用クラス（JSで動的に付与） */
-      .rate-gray {
-        color: #808080;
-        font-weight: bold;
-      }
-      .rate-brown {
-        color: #804000;
-        font-weight: bold;
-      }
-      .rate-green {
-        color: #008000;
-        font-weight: bold;
-      }
-      .rate-cyan {
-        color: #00c0c0;
-        font-weight: bold;
-      }
-      .rate-blue {
-        color: #0000ff;
-        font-weight: bold;
-      }
-      .rate-yellow {
-        color: #c0c000;
-        font-weight: bold;
-      }
-      .rate-orange {
-        color: #ff8000;
-        font-weight: bold;
-      }
-      .rate-red {
-        color: #ff0000;
-        font-weight: bold;
+      /* 本家風レーティングサークルの基本スタイル */
+      .topcoder-like-circle-big {
+        display: inline-block;
+        width: 112px;
+        height: 112px;
+        border-radius: 50%;
+        border: 10px solid transparent;
+        box-sizing: border-box;
+        background-clip: border-box;
+        transition: all 1s ease-out;
       }
 
       .contest-card {
@@ -119,35 +118,40 @@
       <div class="container mx-auto max-w-5xl px-6 py-16 md:py-24">
         <header class="text-center mb-16">
           <h1 class="text-5xl md:text-6xl font-bold tracking-tight text-gray-900">AtCoder</h1>
-          <p class="text-xl md:text-2xl mt-4 text-gray-600"></p>
+          <p class="text-xl md:text-2xl mt-4 text-gray-600">競技プログラミングの記録</p>
         </header>
 
         <section
           id="profile-section"
           class="bg-white p-8 rounded-lg shadow-lg flex flex-col md:flex-row items-center gap-8 mb-16"
         >
-          <img
-            id="user-icon"
-            src="https://img.atcoder.jp/icon/IlIlIlIlIlIlIlIl.png"
-            alt="AtCoder Icon"
-            class="w-32 h-32 rounded-full border-4 border-gray-200 shadow-md"
-            onerror="
-              this.onerror = null;
-              this.src = 'https://placehold.co/128x128/337AB7/FFFFFF?text=AC';
-            "
-          />
+          <div class="w-32 h-32 flex items-center justify-center bg-white rounded-full shadow-md mx-auto md:mx-0">
+            <span
+              class="topcoder-like-circle-big rating-circle"
+              id="RatingCircle-IlIlIlIlIlIlIlIl"
+              style="
+                border-color: rgb(128, 128, 128);
+                background: linear-gradient(to top, rgb(128, 128, 128) 0%, rgba(0, 0, 0, 0) 0%) border-box;
+              "
+            ></span>
+          </div>
+
           <div class="flex-1 text-center md:text-left">
-            <h2 id="user-name" class="text-3xl font-bold text-gray-900">IlIlIlIlIlIlIlIl</h2>
+            <h2 id="user-name" class="text-3xl font-bold text-gray-900 transition-colors duration-500">
+              IlIlIlIlIlIlIlIl
+            </h2>
             <p class="text-lg text-gray-600 mt-2">
-              Estimated Rank: <span id="user-rating" class="rate-gray">Loading...</span>
+              Estimated Rating: <span id="user-rating" class="font-bold text-xl">Loading...</span>
             </p>
-            <p class="text-md text-gray-500 mt-1">Main Language: <span id="user-lang">Loading...</span></p>
+            <p class="text-md text-gray-500 mt-1">
+              Main Language: <span id="user-lang" class="font-semibold text-gray-700">Loading...</span>
+            </p>
             <a
               id="atcoder-profile-link"
               href="https://atcoder.jp/users/IlIlIlIlIlIlIlIl"
               target="_blank"
               rel="noopener noreferrer"
-              class="inline-block bg-ac-blue text-white font-bold py-2 px-6 rounded-lg mt-4 transition-all duration-300 hover:bg-ac-blue-dark"
+              class="inline-block bg-ac-blue text-white font-bold py-2 px-6 rounded-lg mt-4 transition-all duration-300 hover:bg-ac-blue-dark shadow-sm"
             >
               AtCoder Profile
             </a>
@@ -155,7 +159,7 @@
         </section>
 
         <section id="rating-graph-section" class="bg-white p-6 md:p-8 rounded-lg shadow-lg mb-16">
-          <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Rating History (Estimated from Problems)</h3>
+          <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Activity Score (Estimated from Submissions)</h3>
           <div class="w-full h-64 md:h-96">
             <canvas id="ratingChart"></canvas>
           </div>
@@ -185,7 +189,7 @@
         <div class="p-6 md:p-8">
           <div class="flex justify-between items-start mb-4">
             <div>
-              <h3 id="modal-title" class="text-2xl font-bold text-gray-900"></h3>
+              <h3 id="modal-title" class="text-2xl font-bold text-gray-900 text-ac-blue"></h3>
               <p id="modal-date" class="text-sm text-gray-500"></p>
             </div>
             <button
@@ -199,16 +203,18 @@
 
           <div class="border-t border-gray-200 pt-4">
             <h4 class="text-lg font-semibold text-gray-800 mb-2">コンテストの統計・提出状況</h4>
-            <div id="modal-stats" class="text-sm text-gray-600 mb-4 space-y-1"></div>
-            <p id="modal-comment" class="text-base text-gray-700 leading-relaxed mb-6"></p>
+            <div
+              id="modal-stats"
+              class="text-sm text-gray-600 mb-6 space-y-2 bg-gray-50 p-4 rounded-lg border border-gray-100"
+            ></div>
             <a
               id="modal-solution-link"
               href="#"
               target="_blank"
               rel="noopener noreferrer"
-              class="inline-block bg-ac-blue text-white font-bold py-2 px-5 rounded-lg transition-all duration-300 hover:bg-ac-blue-dark"
+              class="inline-block bg-ac-blue text-white font-bold py-2 px-5 rounded-lg transition-all duration-300 hover:bg-ac-blue-dark shadow-sm"
             >
-              提出コード
+              提出一覧を見る
             </a>
           </div>
         </div>
@@ -219,16 +225,20 @@
       const USER_ID = 'IlIlIlIlIlIlIlIl';
       let globalContestData = [];
 
-      // レートに応じた色分けクラスを返す関数
-      function getRatingClass(rating) {
-        if (rating < 400) return 'rate-gray';
-        if (rating < 800) return 'rate-brown';
-        if (rating < 1200) return 'rate-green';
-        if (rating < 1600) return 'rate-cyan';
-        if (rating < 2000) return 'rate-blue';
-        if (rating < 2400) return 'rate-yellow';
-        if (rating < 2800) return 'rate-orange';
-        return 'rate-red';
+      // レートに応じたRGB文字列とクラス名を返すオブジェクトマッパー
+      const ratingTierMap = [
+        { max: 400, color: 'rgb(128, 128, 128)', class: 'rating-color-gray' }, // 灰
+        { max: 800, color: 'rgb(128, 64, 0)', class: 'rating-color-brown' }, // 茶
+        { max: 1200, color: 'rgb(0, 128, 0)', class: 'rating-color-green' }, // 緑
+        { max: 1600, color: 'rgb(0, 192, 192)', class: 'rating-color-cyan' }, // 水
+        { max: 2000, color: 'rgb(0, 0, 255)', class: 'rating-color-blue' }, // 青
+        { max: 2400, color: 'rgb(192, 192, 0)', class: 'rating-color-yellow' }, // 黄
+        { max: 2800, color: 'rgb(255, 128, 0)', class: 'rating-color-orange' }, // 橙
+        { max: Infinity, color: 'rgb(255, 0, 0)', class: 'rating-color-red' } // 赤
+      ];
+
+      function getRatingTier(rating) {
+        return ratingTierMap.find((tier) => rating < tier.max);
       }
 
       document.addEventListener('DOMContentLoaded', () => {
@@ -237,12 +247,8 @@
         const modalContent = document.getElementById('modal-content');
         const modalCloseBtn = document.getElementById('modal-close-btn');
 
-        // ===============================================
-        // AtCoder Problems API からデータ取得
-        // ===============================================
         async function fetchAtCoderData() {
           try {
-            // 1. ユーザーの提出履歴を取得
             const response = await fetch(
               `https://kenkoooo.com/atcoder/atcoder-api/v3/user/submissions?user=${USER_ID}&from_second=0`
             );
@@ -255,19 +261,15 @@
               return;
             }
 
-            // --- データ加工処理 ---
             const contestsMap = {};
             const langCounter = {};
 
-            // 提出時刻の降順にソート
             submissions.sort((a, b) => b.epoch_second - a.epoch_second);
 
             submissions.forEach((sub) => {
-              // メイン言語集計用の言語名パース (例: "C++ 23 (gcc 13.2)" -> "C++")
               const baseLang = sub.language.split(' ')[0];
               langCounter[baseLang] = (langCounter[baseLang] || 0) + 1;
 
-              // コンテストごとにデータをマージ
               if (!contestsMap[sub.contest_id]) {
                 contestsMap[sub.contest_id] = {
                   id: sub.contest_id,
@@ -277,36 +279,55 @@
                   submissionsCount: 0,
                   acCount: 0,
                   languages: new Set(),
-                  lastSubmissionId: sub.id,
                   problemIds: new Set()
                 };
               }
 
-              contestsMap[sub.contest_id].submissionsCount++;
-              contestsMap[sub.contest_id].languages.add(baseLang);
-              contestsMap[sub.contest_id].problemIds.add(sub.problem_id);
+              const contest = contestsMap[sub.contest_id];
+              contest.submissionsCount++;
+              contest.languages.add(baseLang);
+              contest.problemIds.add(sub.problem_id);
               if (sub.result === 'AC') {
-                contestsMap[sub.contest_id].acCount++;
+                contest.acCount++;
               }
             });
 
-            // メイン言語の決定・反映
             const topLang = Object.keys(langCounter).reduce(
               (a, b) => (langCounter[a] > langCounter[b] ? a : b),
               'None'
             );
             document.getElementById('user-lang').textContent = topLang;
 
-            // オブジェクトから配列に変換し、日付の新しい順にソート
             globalContestData = Object.values(contestsMap).sort((a, b) => b.timestamp - a.timestamp);
 
-            // 簡易的なプロフィールステータスの更新（コンテスト数から実力を仮判定）
             const uniqueProblemsCount = new Set(submissions.filter((s) => s.result === 'AC').map((s) => s.problem_id))
               .size;
-            document.getElementById('user-rating').textContent = `${uniqueProblemsCount} ACs`;
-            document.getElementById('user-rating').className = getRatingClass(uniqueProblemsCount * 3); // モック用の演出
 
-            // レンダリング開始
+            // 擬似実力レートの計算
+            const estimatedRating = Math.min(3199, uniqueProblemsCount * 3.5 + 200);
+            const tier = getRatingTier(estimatedRating);
+
+            // プロフィールへのクラス付与
+            const nameEl = document.getElementById('user-name');
+            nameEl.className = `text-3xl font-bold ${tier.class} transition-colors duration-500`;
+
+            const ratingEl = document.getElementById('user-rating');
+            ratingEl.textContent = `${Math.floor(estimatedRating)} (${uniqueProblemsCount} ACs)`;
+            ratingEl.className = `${tier.class} font-bold text-xl`;
+
+            // ========================================================
+            // 要求された AtCoder Problems 仕様のグラデーションサークル動的生成
+            // ========================================================
+            const ratingCircle = document.getElementById('RatingCircle-IlIlIlIlIlIlIlIl');
+
+            // 下部からのせり上がりパーセンテージを計算 (400点ごとの端数割合)
+            const fillPercent = Math.floor(((estimatedRating % 400) / 400) * 100);
+
+            // スタイルの上書き適用
+            ratingCircle.style.borderColor = tier.color;
+            ratingCircle.style.background = `linear-gradient(to top, ${tier.color} ${fillPercent}%, rgba(0, 0, 0, 0) ${fillPercent}%) border-box`;
+
+            // グラフとコンテストカードの展開
             initRatingChart(globalContestData.slice().reverse());
             renderContestRecords(globalContestData);
           } catch (error) {
@@ -316,21 +337,17 @@
           }
         }
 
-        // --- 1. レートグラフの描画 (Chart.js) ---
         function initRatingChart(sortedData) {
           const ctx = document.getElementById('ratingChart').getContext('2d');
           if (!ctx) return;
 
-          // 直近15件のコンテストデータを使用
           const chartDataNodes = sortedData.slice(-15);
           const labels = chartDataNodes.map((c) => c.date);
 
-          // Problems APIからは純粋な「内部レート推移」が取れないため、
-          // ここでは「そのコンテスト時点での総AC数」を擬似タイムラインとして可視化
           let acAccumulator = 0;
           const dataPoints = chartDataNodes.map((c) => {
             acAccumulator += c.acCount;
-            return acAccumulator * 10 + 400; // 見栄え用のスケーリング
+            return Math.floor(acAccumulator * 3.5 + 200);
           });
 
           const gradient = ctx.createLinearGradient(0, 0, 0, 400);
@@ -343,7 +360,7 @@
               labels: labels,
               datasets: [
                 {
-                  label: 'Activity Score',
+                  label: 'Estimated Rating 推移',
                   data: dataPoints,
                   borderColor: '#337ab7',
                   backgroundColor: gradient,
@@ -367,7 +384,6 @@
           });
         }
 
-        // --- 2. コンテスト記録の描画 ---
         function renderContestRecords(data) {
           recordsContainer.innerHTML = '';
 
@@ -381,11 +397,11 @@
                     <span class="text-sm text-gray-500 mt-1 md:mt-0">${contest.date}</span>
                   </div>
                   <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-700 mb-4">
-                    <span>解いた問題数 (AC): <strong class="text-gray-900">${contest.acCount} / ${contest.problemIds.size}</strong></span>
+                    <span>AC数: <strong class="text-gray-900">${contest.acCount} / ${contest.problemIds.size}</strong></span>
                     <span>総提出数: <strong class="text-gray-900">${contest.submissionsCount}</strong></span>
                     <span>使用言語: <strong class="text-gray-900">${langList}</strong></span>
                   </div>
-                  <p class="text-gray-600 leading-relaxed mb-5">このコンテストでは期間中に計 ${contest.submissionsCount} 回提出し、${contest.acCount} 個のユニークな課題でACを獲得しました。</p>
+                  <p class="text-gray-600 leading-relaxed mb-5">このコンテストでは期間中に計 ${contest.submissionsCount} 回提出し、${contest.acCount} 個のユニークな問題でACを獲得しました。</p>
                   <button
                     data-index="${index}"
                     class="details-btn text-ac-blue font-semibold transition-colors duration-300 hover:text-ac-blue-dark"
@@ -398,31 +414,27 @@
             recordsContainer.innerHTML += cardHtml;
           });
 
-          // GSAPアニメーション
           gsap.to('.contest-card', {
             opacity: 1,
             y: 0,
             duration: 0.5,
-            stagger: 0.1,
+            stagger: 0.08,
             ease: 'power3.out',
-            delay: 0.3
+            delay: 0.2
           });
         }
 
-        // --- 3. モーダルを開く ---
         function openModal(index) {
           const contest = globalContestData[index];
 
           document.getElementById('modal-title').textContent = contest.title;
-          document.getElementById('modal-date').textContent = `初提出日: ${contest.date}`;
+          document.getElementById('modal-date').textContent = `活動日: ${contest.date}`;
           document.getElementById('modal-stats').innerHTML = `
-            <div>• 総AC数: <strong>${contest.acCount}</strong></div>
-            <div>• ユニーク問題数: <strong>${contest.problemIds.size}</strong></div>
-            <div>• 使用言語: <strong>${Array.from(contest.languages).join(', ')}</strong></div>
+            <div>• <strong>正解した問題数 (AC):</strong> ${contest.acCount} / ${contest.problemIds.size}</div>
+            <div>• <strong>このコンテストへの総提出回数:</strong> ${contest.submissionsCount} 回</div>
+            <div>• <strong>使用された言語:</strong> ${Array.from(contest.languages).join(', ')}</div>
           `;
-          document.getElementById('modal-comment').textContent = ``;
 
-          // 該当コンテストの提出一覧ページへの公式リンク、または最新の提出詳細コードへの直リンク
           document.getElementById('modal-solution-link').href =
             `https://atcoder.jp/contests/${contest.id}/submissions?f.User=${USER_ID}`;
 
@@ -432,19 +444,18 @@
             opacity: 1,
             scale: 1,
             duration: 0.4,
-            delay: 0.1,
-            ease: 'back.out(1.4)'
+            delay: 0.05,
+            ease: 'back.out(1.2)'
           });
 
           document.body.style.overflow = 'hidden';
         }
 
-        // --- 4. モーダルを閉じる ---
         function closeModal() {
-          gsap.to(modalContent, { opacity: 0, scale: 0.95, duration: 0.3, ease: 'power2.in' });
+          gsap.to(modalContent, { opacity: 0, scale: 0.95, duration: 0.2, ease: 'power2.in' });
           gsap.to(modalBackdrop, {
             opacity: 0,
-            duration: 0.4,
+            duration: 0.3,
             ease: 'power2.out',
             onComplete: () => {
               modalBackdrop.style.display = 'none';
@@ -453,14 +464,9 @@
           });
         }
 
-        // ===============================================
-        // イベントリスナー
-        // ===============================================
         recordsContainer.addEventListener('click', (e) => {
           const button = e.target.closest('.details-btn');
-          if (button) {
-            openModal(button.dataset.index);
-          }
+          if (button) openModal(button.dataset.index);
         });
 
         modalCloseBtn.addEventListener('click', closeModal);
@@ -471,7 +477,6 @@
           if (e.key === 'Escape' && modalBackdrop.style.display === 'flex') closeModal();
         });
 
-        // 初期データロード実行
         fetchAtCoderData();
       });
     </script>
